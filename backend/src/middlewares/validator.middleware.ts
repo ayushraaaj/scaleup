@@ -10,7 +10,7 @@ export const validate = (req: Request, res: Response, next: NextFunction) => {
     }
 
     const message = errors.array()[0]?.msg || "Invalid request data";
-    console.log(errors.array());
+    // console.log(errors.array());
 
     throw new ApiError(422, message);
 };

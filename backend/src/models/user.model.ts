@@ -39,10 +39,6 @@ const userSchema = new mongoose.Schema<IUser>(
             type: Boolean,
             default: false,
         },
-        isMentor: {
-            type: Boolean,
-            default: false,
-        },
         isEmailVerified: {
             type: Boolean,
             default: false,
