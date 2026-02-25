@@ -23,3 +23,29 @@ export const createPostValidator = () => {
 export const singlePostValidator = () => {
     return [param("postId").isMongoId().withMessage("Invalid post ID")];
 };
+
+export const postReactionValidator = () => {
+    return [
+        param("postId").isMongoId().withMessage("Invalid post ID"),
+
+        body("type")
+            .notEmpty()
+            .withMessage("Reaction type is required")
+            .bail()
+            .isIn(["like", "dislike"])
+            .withMessage("Type must be  either 'like' or 'dislike'"),
+    ];
+};
+
+export const addCommentValidator = () => {
+    return [
+        param("postId").isMongoId().withMessage("Invalid post ID"),
+
+        body("content")
+            .trim()
+            .notEmpty()
+            .withMessage("Content is required")
+            .isLength({ min: 4 })
+            .withMessage("Content must be atleast 4 characters long"),
+    ];
+};

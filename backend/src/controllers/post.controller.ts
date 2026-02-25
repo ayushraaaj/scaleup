@@ -5,6 +5,8 @@ import { ApiResponse } from "../utils/ApiResponse";
 import { User } from "../models/user.model";
 import { ApiError } from "../utils/ApiError";
 import { Mentor } from "../models/mentor.model";
+import { Reaction } from "../models/reaction.model";
+import { Comment } from "../models/comment.model";
 
 export const createPost = asyncHandler(async (req: Request, res: Response) => {
     const mentorId = req.user?._id;
@@ -75,3 +77,110 @@ export const getSinglePost = asyncHandler(
         return res.status(200).json(new ApiResponse("Post fetched", post));
     },
 );
+
+export const reactToPost = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+    const { postId } = req.params;
+    const { type } = req.body;
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+        throw new ApiError(404, "Post not found");
+    }
+
+    const existingReaction = await Reaction.findOne({ postId, userId });
+
+    // CASE 1: Reaction does not exists
+    if (!existingReaction) {
+        await Reaction.create({ postId, userId, type });
+
+        if (type === "like") {
+            await Post.findByIdAndUpdate(postId, {
+                $inc: { likesCount: 1 },
+            });
+        }
+
+        return res.status(200).json(new ApiResponse("Reaction added", {}));
+    }
+
+    // CASE 2: Clicked on the same reaction
+    if (existingReaction.type === type) {
+        await Reaction.findByIdAndDelete(existingReaction._id);
+
+        if (type === "like") {
+            await Post.findByIdAndUpdate(postId, {
+                $inc: { likesCount: -1 },
+            });
+        }
+
+        return res.status(200).json(new ApiResponse("Reaction removed", {}));
+    }
+
+    // CASE 3: Clicked on different reaction
+    await Reaction.findByIdAndUpdate(existingReaction._id, { type });
+
+    if (type === "like") {
+        await Post.findByIdAndUpdate(postId, {
+            $inc: { likesCount: 1 },
+        });
+    } else {
+        await Post.findByIdAndUpdate(postId, {
+            $inc: { likesCount: -1 },
+        });
+    }
+
+    return res.status(200).json(new ApiResponse("Reaction updated", {}));
+});
+
+export const addComment = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+    const { postId } = req.params;
+    const { content } = req.body;
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+        throw new ApiError(404, "Post not found");
+    }
+
+    await Comment.create({ postId, userId, content });
+
+    await Post.findByIdAndUpdate(postId, {
+        $inc: { commentsCount: 1 },
+    });
+
+    return res.status(201).json(new ApiResponse("Comment added", {}));
+});
+
+export const getComments = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+    const { postId } = req.params;
+
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const post = await Post.findById(postId);
+
+    if (!post) {
+        throw new ApiError(404, "Post not found");
+    }
+
+    const comments = await Comment.find({ postId })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("userId", "fullname username");
+
+    const totalComments = post.commentsCount;
+
+    return res.status(200).json(
+        new ApiResponse("Comments fetched", {
+            page,
+            totalPages: Math.ceil(totalComments / limit),
+            totalComments,
+            comments,
+        }),
+    );
+});
