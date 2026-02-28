@@ -184,3 +184,99 @@ export const getComments = asyncHandler(async (req: Request, res: Response) => {
         }),
     );
 });
+
+export const deleteComment = asyncHandler(
+    async (req: Request, res: Response) => {
+        const userId = req.user?._id;
+        const { postId, commentId } = req.params;
+
+        const post = await Post.findById(postId);
+        if (!post) {
+            throw new ApiError(404, "Post not found");
+        }
+
+        const comment = await Comment.findOne({
+            _id: commentId,
+            postId: postId,
+        });
+        if (!comment) {
+            throw new ApiError(404, "Comment not found");
+        }
+
+        if (post.mentorId.equals(userId) || comment.userId.equals(userId)) {
+            await Comment.findByIdAndDelete(commentId);
+
+            await Post.findByIdAndUpdate(postId, {
+                $inc: { commentsCount: -1 },
+            });
+
+            return res
+                .status(200)
+                .json(new ApiResponse("Comment deleted successfully", {}));
+        }
+
+        throw new ApiError(403, "Forbidden");
+    },
+);
+
+export const deletePost = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+    const { postId } = req.params;
+
+    const post = await Post.findOne({ _id: postId, mentorId: userId });
+
+    if (!post) {
+        throw new ApiError(404, "Post not found");
+    }
+
+    await Comment.deleteMany({ postId: post._id });
+
+    await Reaction.deleteMany({ postId: post._id });
+
+    await Post.findByIdAndDelete(postId);
+
+    return res
+        .status(200)
+        .json(new ApiResponse("Post deleted successfully", {}));
+});
+
+export const editPost = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+    const { postId } = req.params;
+    const { title, content, tags, visibility } = req.body;
+
+    const updateFields: PostUpdateFields = {};
+
+    if (title) {
+        updateFields.title = title;
+    }
+    if (content) {
+        updateFields.content = content;
+    }
+    if (tags) {
+        updateFields.tags = tags;
+    }
+    if (visibility) {
+        updateFields.visibility = visibility;
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+        throw new ApiError(400, "No valid fields provided for update");
+    }
+
+    const updatedPost = await Post.findOneAndUpdate(
+        { _id: postId, mentorId: userId },
+        { $set: updateFields },
+        { new: true },
+    );
+
+    if (!updatedPost) {
+        throw new ApiError(404, "Post not found");
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse("Post details updated successfully", updatedPost),
+        );
+});

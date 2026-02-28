@@ -51,7 +51,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
         await generateAccessAndRefreshToken(user);
 
     const loggedInUser = await User.findById(user._id).select(
-        "-password -emailVerificationToken -emailVerificationExpiry -forgotPasswordToken -forgotPasswordExpiry",
+        "-password -emailVerificationToken -emailVerificationExpiry -forgotPasswordToken -forgotPasswordExpiry -refreshToken",
     );
 
     const options = {
