@@ -99,3 +99,18 @@ export const editPostValidator = () => {
         body("tags").optional().isArray(),
     ];
 };
+
+export const editCommentValidator = () => {
+    return [
+        param("postId").isMongoId().withMessage("Invalid post ID"),
+
+        param("commentId").isMongoId().withMessage("Invalid comment ID"),
+
+        body("content")
+            .trim()
+            .notEmpty()
+            .withMessage("Content is required")
+            .isLength({ min: 4 })
+            .withMessage("Content must be atleast 4 characters long"),
+    ];
+};

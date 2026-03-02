@@ -4,17 +4,19 @@ import {
     reactToPost,
     createPost,
     getSinglePost,
-    getComments,
-    addComment,
-    deleteComment,
     deletePost,
     editPost,
+    getComments,
+    deleteComment,
+    addComment,
+    editComment,
 } from "../controllers/post.controller";
 import {
     addCommentValidator,
     createPostValidator,
     deleteCommentValidator,
     deletePostValidator,
+    editCommentValidator,
     editPostValidator,
     getCommentsValidator,
     postReactionValidator,
@@ -33,7 +35,8 @@ router.use(verifyJWT);
 
 router
     .route("/:postId/comment/:commentId")
-    .delete(deleteCommentValidator(), validate, deleteComment);
+    .delete(deleteCommentValidator(), validate, deleteComment)
+    .patch(editCommentValidator(), validate, editComment);
 
 router.use(checkIfMentor);
 

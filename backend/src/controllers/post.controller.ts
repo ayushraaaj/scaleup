@@ -133,6 +133,68 @@ export const reactToPost = asyncHandler(async (req: Request, res: Response) => {
     return res.status(200).json(new ApiResponse("Reaction updated", {}));
 });
 
+export const deletePost = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+    const { postId } = req.params;
+
+    const post = await Post.findOne({ _id: postId, mentorId: userId });
+
+    if (!post) {
+        throw new ApiError(404, "Post not found");
+    }
+
+    await Comment.deleteMany({ postId: post._id });
+
+    await Reaction.deleteMany({ postId: post._id });
+
+    await Post.findByIdAndDelete(postId);
+
+    return res
+        .status(200)
+        .json(new ApiResponse("Post deleted successfully", {}));
+});
+
+export const editPost = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+    const { postId } = req.params;
+    const { title, content, tags, visibility } = req.body;
+
+    const updateFields: PostUpdateFields = {};
+
+    if (title) {
+        updateFields.title = title;
+    }
+    if (content) {
+        updateFields.content = content;
+    }
+    if (tags) {
+        updateFields.tags = tags;
+    }
+    if (visibility) {
+        updateFields.visibility = visibility;
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+        throw new ApiError(400, "No valid fields provided for update");
+    }
+
+    const updatedPost = await Post.findOneAndUpdate(
+        { _id: postId, mentorId: userId },
+        { $set: updateFields },
+        { new: true },
+    );
+
+    if (!updatedPost) {
+        throw new ApiError(404, "Post not found");
+    }
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse("Post details updated successfully", updatedPost),
+        );
+});
+
 export const addComment = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user?._id;
     const { postId } = req.params;
@@ -219,64 +281,22 @@ export const deleteComment = asyncHandler(
     },
 );
 
-export const deletePost = asyncHandler(async (req: Request, res: Response) => {
+export const editComment = asyncHandler(async (req: Request, res: Response) => {
     const userId = req.user?._id;
-    const { postId } = req.params;
+    const { postId, commentId } = req.params;
+    const { content } = req.body;
 
-    const post = await Post.findOne({ _id: postId, mentorId: userId });
-
-    if (!post) {
-        throw new ApiError(404, "Post not found");
-    }
-
-    await Comment.deleteMany({ postId: post._id });
-
-    await Reaction.deleteMany({ postId: post._id });
-
-    await Post.findByIdAndDelete(postId);
-
-    return res
-        .status(200)
-        .json(new ApiResponse("Post deleted successfully", {}));
-});
-
-export const editPost = asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user?._id;
-    const { postId } = req.params;
-    const { title, content, tags, visibility } = req.body;
-
-    const updateFields: PostUpdateFields = {};
-
-    if (title) {
-        updateFields.title = title;
-    }
-    if (content) {
-        updateFields.content = content;
-    }
-    if (tags) {
-        updateFields.tags = tags;
-    }
-    if (visibility) {
-        updateFields.visibility = visibility;
-    }
-
-    if (Object.keys(updateFields).length === 0) {
-        throw new ApiError(400, "No valid fields provided for update");
-    }
-
-    const updatedPost = await Post.findOneAndUpdate(
-        { _id: postId, mentorId: userId },
-        { $set: updateFields },
+    const comment = await Comment.findOneAndUpdate(
+        { _id: commentId, userId, postId },
+        { $set: { content } },
         { new: true },
     );
 
-    if (!updatedPost) {
-        throw new ApiError(404, "Post not found");
+    if (!comment) {
+        throw new ApiError(404, "Comment not found");
     }
 
     return res
         .status(200)
-        .json(
-            new ApiResponse("Post details updated successfully", updatedPost),
-        );
+        .json(new ApiResponse("Comment updated successfully", comment));
 });
