@@ -1,7 +1,13 @@
 import { Router } from "express";
-import { verifyJWT } from "../middlewares/auth.middleware";
-import { createMontorProfile } from "../controllers/mentor.controller";
-import { mentorProfileValidator } from "../validators/mentor.validator";
+import { checkIfMentor, verifyJWT } from "../middlewares/auth.middleware";
+import {
+    createMontorProfile,
+    updateAvailability,
+} from "../controllers/mentor.controller";
+import {
+    availabilityValidator,
+    mentorProfileValidator,
+} from "../validators/mentor.validator";
 import { validate } from "../middlewares/validator.middleware";
 import { getMentorPosts } from "../controllers/post.controller";
 
@@ -14,5 +20,11 @@ router.use(verifyJWT);
 router
     .route("/profile")
     .post(mentorProfileValidator(), validate, createMontorProfile);
+
+router.use(checkIfMentor);
+
+router
+    .route("/availability")
+    .patch(availabilityValidator(), validate, updateAvailability);
 
 export default router;
