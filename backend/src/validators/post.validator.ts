@@ -45,6 +45,7 @@ export const addCommentValidator = () => {
             .trim()
             .notEmpty()
             .withMessage("Content is required")
+            .bail()
             .isLength({ min: 4 })
             .withMessage("Content must be atleast 4 characters long"),
     ];
@@ -93,6 +94,7 @@ export const editPostValidator = () => {
             .isString()
             .notEmpty()
             .withMessage("Visibility is required")
+            .bail()
             .isIn(["free", "visibility"])
             .withMessage("Visibility must be either 'free' or 'premium'"),
 
@@ -110,6 +112,7 @@ export const editCommentValidator = () => {
             .trim()
             .notEmpty()
             .withMessage("Content is required")
+            .bail()
             .isLength({ min: 4 })
             .withMessage("Content must be atleast 4 characters long"),
     ];

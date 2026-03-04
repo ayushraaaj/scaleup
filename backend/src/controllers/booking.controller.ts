@@ -17,8 +17,59 @@ export const createBooking = asyncHandler(
             throw new ApiError(404, "Mentor not found");
         }
 
+        if (!mentor.availability || mentor.availability.length === 0) {
+            throw new ApiError(400, "Mentor is not available");
+        }
+
         const start = new Date(startTime);
         const end = new Date(start.getTime() + durationInMinutes * 60 * 1000);
+
+        // const minutes = start.getMinutes();
+        // if (minutes !== 0 && minutes !== 30) {
+        //     throw new ApiError(
+        //         400,
+        //         "Start time must start at 00 or 30 minutes",
+        //     );
+        // }
+
+        // const now = new Date();
+
+        // if (start < now) {
+        //     throw new ApiError(400, "Cannot book past time");
+        // }
+
+        // const maxBookingDate = new Date();
+        // maxBookingDate.setDate(maxBookingDate.getDate() + 30);
+
+        // if (start > maxBookingDate) {
+        //     throw new ApiError(400, "Booking allowed only within 30 days");
+        // }
+
+        const dayOfWeek = start.getDay();
+
+        const availability = mentor.availability.find(
+            (a) => a.dayOfWeek === dayOfWeek,
+        );
+
+        if (!availability) {
+            throw new ApiError(400, "Mentor not available on this day");
+        }
+
+        const requestedStartTime = start.toTimeString().slice(0, 5);
+        const requestedEndTime = end.toTimeString().slice(0, 5);
+
+        const isWithinSlot = availability.slots.some(
+            (slot) =>
+                slot.startTime <= requestedStartTime &&
+                slot.endTime >= requestedEndTime,
+        );
+
+        if (!isWithinSlot) {
+            throw new ApiError(
+                400,
+                "Selected time is outside mentors availability",
+            );
+        }
 
         const hourlyRate =
             sessionType === "audio"
