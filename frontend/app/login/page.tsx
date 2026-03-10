@@ -3,8 +3,12 @@ import { api } from "@/services/axios";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { setAccessToken, setUserRole } from "@/utils/auth";
+import { useRouter } from "next/navigation";
 
 const Login = () => {
+    const router = useRouter();
+
     const [loading, setLoading] = useState(false);
     const [buttonDisabled, setButtonDisabled] = useState(true);
     const [user, setUser] = useState({ username_email: "", password: "" });
@@ -13,8 +17,15 @@ const Login = () => {
         try {
             setLoading(true);
             const res = await api.post("/auth/login", user);
-            toast.success(res.data.message || "Welcome back to ScaleUp");
-            // Add redirect logic here (e.g., router.push("/dashboard"))
+
+            setAccessToken(res.data.data.accessToken);
+            setUserRole(res.data.data.userRole);
+
+            toast.success("Welcome back to ScaleUp");
+
+            setTimeout(() => {
+                router.replace("/dashboard/feed");
+            }, 1000);
         } catch (error: any) {
             toast.error(error?.response?.data.message || "Invalid credentials");
         } finally {

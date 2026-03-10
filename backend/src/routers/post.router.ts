@@ -10,6 +10,7 @@ import {
     deleteComment,
     addComment,
     editComment,
+    getAllPosts,
 } from "../controllers/post.controller";
 import {
     addCommentValidator,
@@ -25,6 +26,8 @@ import {
 import { validate } from "../middlewares/validator.middleware";
 
 const router = Router();
+
+router.route("/all").get(getAllPosts);
 
 router.route("/:postId").get(singlePostValidator(), validate, getSinglePost);
 router

@@ -26,6 +26,27 @@ export const createPost = asyncHandler(async (req: Request, res: Response) => {
         .json(new ApiResponse("Post created successfully", post));
 });
 
+export const getAllPosts = asyncHandler(async (req: Request, res: Response) => {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const posts = await Post.find()
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .populate("mentorId", "fullname username");
+
+    const totalPosts = await Post.countDocuments();
+
+    return res.status(200).json(
+        new ApiResponse("Posts fetched", {
+            posts,
+            totalPages: Math.ceil(totalPosts / limit),
+        }),
+    );
+});
+
 export const getMentorPosts = asyncHandler(
     async (req: Request, res: Response) => {
         const { username } = req.params;
@@ -68,7 +89,10 @@ export const getSinglePost = asyncHandler(
     async (req: Request, res: Response) => {
         const { postId } = req.params;
 
-        const post = await Post.findById(postId);
+        const post = await Post.findById(postId).populate(
+            "mentorId",
+            "fullname username",
+        );
 
         if (!post) {
             throw new ApiError(404, "Post not found");

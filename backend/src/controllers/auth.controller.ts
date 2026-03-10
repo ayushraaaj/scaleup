@@ -4,6 +4,7 @@ import { User } from "../models/user.model";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { generateAccessAndRefreshToken } from "../services/generateToken";
+import { Mentor } from "../models/mentor.model";
 
 export const signupUser = asyncHandler(async (req: Request, res: Response) => {
     const { fullname, username, email, password } = req.body;
@@ -54,6 +55,8 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
         "-password -emailVerificationToken -emailVerificationExpiry -forgotPasswordToken -forgotPasswordExpiry -refreshToken",
     );
 
+    const isMentor = await Mentor.exists({ userId: loggedInUser?._id });
+
     const options = {
         httpOnly: true,
 
@@ -67,6 +70,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
             new ApiResponse("Login successful", {
                 ...loggedInUser?.toObject(),
                 accessToken,
+                userRole: isMentor ? 'mentor' : 'user',
             }),
         );
 });
