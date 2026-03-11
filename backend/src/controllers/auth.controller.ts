@@ -5,6 +5,8 @@ import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { generateAccessAndRefreshToken } from "../services/generateToken";
 import { Mentor } from "../models/mentor.model";
+import jwt, { JwtPayload } from "jsonwebtoken";
+import { REFRESH_TOKEN_SECRET } from "../config/env";
 
 export const signupUser = asyncHandler(async (req: Request, res: Response) => {
     const { fullname, username, email, password } = req.body;
@@ -59,7 +61,9 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
     const options = {
         httpOnly: true,
-
+        // secure: true,
+        // sameSite: "none" as const,
+        // path: "/api/v1/refresh-token",
         maxAge: 7 * 24 * 60 * 60 * 1000,
     };
 
@@ -70,7 +74,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
             new ApiResponse("Login successful", {
                 ...loggedInUser?.toObject(),
                 accessToken,
-                userRole: isMentor ? 'mentor' : 'user',
+                userRole: isMentor ? "mentor" : "user",
             }),
         );
 });
@@ -101,3 +105,53 @@ export const aboutMe = asyncHandler(async (req: Request, res: Response) => {
 
     return res.status(200).json(new ApiResponse("User Authenticated", user));
 });
+
+export const refreshToken = asyncHandler(
+    async (req: Request, res: Response) => {
+        const refreshToken = req.cookies?.refreshToken;
+
+        if (!refreshToken) {
+            throw new ApiError(401, "Refresh token is missing");
+        }
+
+        let decodedToken;
+
+        try {
+            decodedToken = jwt.verify(
+                refreshToken,
+                REFRESH_TOKEN_SECRET,
+            ) as JwtPayload;
+        } catch (error) {
+            throw new ApiError(401, "Invalid or expired refresh token1");
+        }
+
+        const user = await User.findById(decodedToken._id);
+
+        const isMentor = await Mentor.exists({ userId: decodedToken._id });
+
+        if (!user || user.refreshToken !== refreshToken) {
+            throw new ApiError(401, "Invalid or expired refresh token2");
+        }
+
+        const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+            await generateAccessAndRefreshToken(user);
+
+        const options = {
+            httpOnly: true,
+            // secure: true,
+            // sameSite: "none" as const,
+            // path: "/api/v1/auth/refresh-token",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+        };
+
+        return res
+            .status(200)
+            .cookie("refreshToken", newRefreshToken, options)
+            .json(
+                new ApiResponse("Access token refreshed", {
+                    newAccessToken,
+                    userRole: isMentor ? "mentor" : "user",
+                }),
+            );
+    },
+);

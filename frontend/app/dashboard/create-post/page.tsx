@@ -1,4 +1,4 @@
-// "use client";
+"use client";
 import { getUserRole } from "@/utils/auth";
 
 const CreatePost = () => {
@@ -6,7 +6,7 @@ const CreatePost = () => {
 
     return (
         <div>
-            {userRole == "mentor" ? (
+            {userRole === "mentor" ? (
                 <h1>Create Post</h1>
             ) : (
                 <h1>Upgrade to mentor profile to publish your post</h1>

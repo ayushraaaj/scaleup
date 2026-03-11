@@ -9,7 +9,7 @@ export const getAccessToken = () => {
     return accessToken;
 };
 
-export const setUserRole = (role: string) => {
+export const setUserRole = (role: string | null) => {
     userRole = role;
 };
 

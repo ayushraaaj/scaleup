@@ -3,6 +3,7 @@ import {
     aboutMe,
     loginUser,
     logoutUser,
+    refreshToken,
     signupUser,
 } from "../controllers/auth.controller";
 import { loginValidator, signupValidator } from "../validators/auth.validator";
@@ -13,6 +14,7 @@ const router = Router();
 
 router.route("/signup").post(signupValidator(), validate, signupUser);
 router.route("/login").post(loginValidator(), validate, loginUser);
+router.route("/refresh-token").post(refreshToken);
 
 router.use(verifyJWT);
 
