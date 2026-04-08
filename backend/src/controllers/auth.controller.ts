@@ -9,149 +9,149 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { REFRESH_TOKEN_SECRET } from "../config/env";
 
 export const signupUser = asyncHandler(async (req: Request, res: Response) => {
-    const { fullname, username, email, password } = req.body;
+  const { fullname, username, email, password } = req.body;
 
-    const existingUser = await User.findOne({
-        $or: [{ username }, { email }],
-    });
+  const existingUser = await User.findOne({
+    $or: [{ username }, { email }],
+  });
 
-    if (existingUser) {
-        throw new ApiError(409, "User with username or email already exists");
-    }
+  if (existingUser) {
+    throw new ApiError(409, "User with username or email already exists");
+  }
 
-    const user = await User.create(req.body);
+  const user = await User.create(req.body);
 
-    const createdUser = await User.findById(user._id).select(
-        "-password -emailVerificationToken -emailVerificationExpiry -forgotPasswordToken -forgotPasswordExpiry -refreshToken",
-    );
+  const createdUser = await User.findById(user._id).select(
+    "-password -emailVerificationToken -emailVerificationExpiry -forgotPasswordToken -forgotPasswordExpiry -refreshToken",
+  );
 
-    if (!createdUser) {
-        throw new ApiError(500, "Something went wrong while registering user");
-    }
+  if (!createdUser) {
+    throw new ApiError(500, "Something went wrong while registering user");
+  }
 
-    return res
-        .status(201)
-        .json(new ApiResponse("Signup successful", createdUser));
+  return res
+    .status(201)
+    .json(new ApiResponse("Signup successful", createdUser));
 });
 
 export const loginUser = asyncHandler(async (req: Request, res: Response) => {
-    const { username_email, password } = req.body;
+  const { username_email, password } = req.body;
 
-    const user = await User.findOne({
-        $or: [{ email: username_email }, { username: username_email }],
-    });
+  const user = await User.findOne({
+    $or: [{ email: username_email }, { username: username_email }],
+  });
 
-    if (!user) {
-        throw new ApiError(401, "Invalid credentials");
-    }
+  if (!user) {
+    throw new ApiError(401, "Invalid credentials");
+  }
 
-    const isPasswordCorrect = await user.isPasswordValid(password);
-    if (!isPasswordCorrect) {
-        throw new ApiError(401, "Invalid credentials");
-    }
+  const isPasswordCorrect = await user.isPasswordValid(password);
+  if (!isPasswordCorrect) {
+    throw new ApiError(401, "Invalid credentials");
+  }
 
-    const { accessToken, refreshToken } =
-        await generateAccessAndRefreshToken(user);
+  const { accessToken, refreshToken } =
+    await generateAccessAndRefreshToken(user);
 
-    const loggedInUser = await User.findById(user._id).select(
-        "-password -emailVerificationToken -emailVerificationExpiry -forgotPasswordToken -forgotPasswordExpiry -refreshToken",
+  const loggedInUser = await User.findById(user._id).select(
+    "-password -emailVerificationToken -emailVerificationExpiry -forgotPasswordToken -forgotPasswordExpiry -refreshToken",
+  );
+
+  const isMentor = await Mentor.exists({ userId: loggedInUser?._id });
+
+  const options = {
+    httpOnly: true,
+    // secure: true,
+    // sameSite: "none" as const,
+    // path: "/api/v1/refresh-token",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  };
+
+  return res
+    .status(200)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse("Login successful", {
+        ...loggedInUser?.toObject(),
+        accessToken,
+        userRole: isMentor ? "mentor" : "user",
+      }),
     );
-
-    const isMentor = await Mentor.exists({ userId: loggedInUser?._id });
-
-    const options = {
-        httpOnly: true,
-        // secure: true,
-        // sameSite: "none" as const,
-        // path: "/api/v1/refresh-token",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-    };
-
-    return res
-        .status(200)
-        .cookie("refreshToken", refreshToken, options)
-        .json(
-            new ApiResponse("Login successful", {
-                ...loggedInUser?.toObject(),
-                accessToken,
-                userRole: isMentor ? "mentor" : "user",
-            }),
-        );
 });
 
 export const logoutUser = asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user?._id;
+  const userId = req.user?._id;
 
-    const user = await User.findByIdAndUpdate(userId, {
-        $unset: { refreshToken: 1 },
-    });
+  const user = await User.findByIdAndUpdate(userId, {
+    $unset: { refreshToken: 1 },
+  });
 
-    const options = {
-        httpOnly: true,
-    };
+  const options = {
+    httpOnly: true,
+  };
 
-    return res
-        .status(200)
-        .clearCookie("refreshToken", options)
-        .json(new ApiResponse("Logout successful", {}));
+  return res
+    .status(200)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse("Logout successful", {}));
 });
 
 export const aboutMe = asyncHandler(async (req: Request, res: Response) => {
-    const userId = req.user?._id;
+  const userId = req.user?._id;
 
-    const user = await User.findById(userId).select(
-        "-password -emailVerificationToken -emailVerificationExpiry -forgotPasswordToken -forgotPasswordExpiry -refreshToken",
-    );
+  const user = await User.findById(userId).select(
+    "-password -emailVerificationToken -emailVerificationExpiry -forgotPasswordToken -forgotPasswordExpiry -refreshToken",
+  );
 
-    return res.status(200).json(new ApiResponse("User Authenticated", user));
+  return res.status(200).json(new ApiResponse("User Authenticated", user));
 });
 
 export const refreshToken = asyncHandler(
-    async (req: Request, res: Response) => {
-        const refreshToken = req.cookies?.refreshToken;
+  async (req: Request, res: Response) => {
+    const refreshToken = req.cookies?.refreshToken;
 
-        if (!refreshToken) {
-            throw new ApiError(401, "Refresh token is missing");
-        }
+    if (!refreshToken) {
+      throw new ApiError(401, "Refresh token is missing");
+    }
 
-        let decodedToken;
+    let decodedToken;
 
-        try {
-            decodedToken = jwt.verify(
-                refreshToken,
-                REFRESH_TOKEN_SECRET,
-            ) as JwtPayload;
-        } catch (error) {
-            throw new ApiError(401, "Invalid or expired refresh token1");
-        }
+    try {
+      decodedToken = jwt.verify(
+        refreshToken,
+        REFRESH_TOKEN_SECRET,
+      ) as JwtPayload;
+    } catch (error) {
+      throw new ApiError(401, "Invalid or expired refresh token1");
+    }
 
-        const user = await User.findById(decodedToken._id);
+    const user = await User.findById(decodedToken._id);
 
-        const isMentor = await Mentor.exists({ userId: decodedToken._id });
+    const isMentor = await Mentor.exists({ userId: decodedToken._id });
 
-        if (!user || user.refreshToken !== refreshToken) {
-            throw new ApiError(401, "Invalid or expired refresh token2");
-        }
+    if (!user || user.refreshToken !== refreshToken) {
+      throw new ApiError(401, "Invalid or expired refresh token2");
+    }
 
-        const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
-            await generateAccessAndRefreshToken(user);
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+      await generateAccessAndRefreshToken(user);
 
-        const options = {
-            httpOnly: true,
-            // secure: true,
-            // sameSite: "none" as const,
-            // path: "/api/v1/auth/refresh-token",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-        };
+    const options = {
+      httpOnly: true,
+      // secure: true,
+      // sameSite: "none" as const,
+      // path: "/api/v1/auth/refresh-token",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    };
 
-        return res
-            .status(200)
-            .cookie("refreshToken", newRefreshToken, options)
-            .json(
-                new ApiResponse("Access token refreshed", {
-                    newAccessToken,
-                    userRole: isMentor ? "mentor" : "user",
-                }),
-            );
-    },
+    return res
+      .status(200)
+      .cookie("refreshToken", newRefreshToken, options)
+      .json(
+        new ApiResponse("Access token refreshed", {
+          newAccessToken,
+          userRole: isMentor ? "mentor" : "user",
+        }),
+      );
+  },
 );
