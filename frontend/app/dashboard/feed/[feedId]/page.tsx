@@ -4,8 +4,10 @@ import { useParams, useRouter } from "next/navigation";
 import { api } from "@/services/axios";
 import { ArrowLeft, Zap, Heart, MessageSquare } from "lucide-react";
 import toast from "react-hot-toast";
+import PostView from "@/components/post/PostView";
 
 const PostDetailPage = () => {
+  console.log("Component rendered");
   const { feedId } = useParams();
 
   const router = useRouter();
@@ -50,6 +52,9 @@ const PostDetailPage = () => {
   if (!post)
     return <div className="p-20 uppercase font-black">Report not found.</div>;
 
+  console.log("TYPE:", typeof post.content);
+  console.log("CONTENT:", post.content);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Top Nav */}
@@ -81,17 +86,10 @@ const PostDetailPage = () => {
                 <span>{new Date(post.createdAt).toLocaleDateString()}</span>
               </div>
             </header>
-
-            {/* Formatted Notepad content */}
-            <div
-              className="prose prose-zinc prose-lg max-w-none
-                            prose-headings:font-black prose-headings:uppercase prose-headings:tracking-tighter
-                            prose-p:text-gray-700 prose-p:leading-relaxed
-                            prose-strong:text-black prose-strong:font-black
-                            prose-code:bg-gray-100 prose-code:p-1 prose-code:text-blue-600"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
           </div>
+
+          {post.content && <PostView content={post.content} />}
+
           <div className="flex items-center gap-10 py-12 border-t border-gray-100 mt-12">
             <button
               onClick={toggleLike}

@@ -7,13 +7,14 @@ import cookieParser from "cookie-parser";
 const app = express();
 
 app.use(
-    cors({
-        origin: CLIENT_URL,
-        credentials: true,
-    }),
+  cors({
+    origin: CLIENT_URL,
+    credentials: true,
+  }),
 );
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 import healthCheckRouter from "./routers/healthcheck.router";

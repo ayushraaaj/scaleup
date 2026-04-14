@@ -1,1 +1,43 @@
 @import "tailwindcss";
+
+.ProseMirror {
+  outline: none;
+  line-height: 1.6;
+  font-size: 16px;
+}
+
+/* H1 */
+.ProseMirror h1 {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 20px 0 10px;
+}
+
+/* H2 */
+.ProseMirror h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 16px 0 8px;
+}
+
+/* Paragraph */
+.ProseMirror p {
+  margin: 8px 0;
+}
+
+/* Code block */
+.ProseMirror pre {
+  background: #1e1e1e;
+  color: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
