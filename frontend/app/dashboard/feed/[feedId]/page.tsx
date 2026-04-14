@@ -34,6 +34,8 @@ const PostDetailPage = () => {
       try {
         const res = await api.get(`/post/${feedId}`);
         setPost(res.data.data);
+        setLikes(res.data.data.likesCount);
+        setIsLiked(res.data.data.isLiked);
       } catch (error: any) {
         toast.error("Failed to load report");
       } finally {
@@ -51,9 +53,6 @@ const PostDetailPage = () => {
     );
   if (!post)
     return <div className="p-20 uppercase font-black">Report not found.</div>;
-
-  console.log("TYPE:", typeof post.content);
-  console.log("CONTENT:", post.content);
 
   return (
     <div className="min-h-screen bg-white">

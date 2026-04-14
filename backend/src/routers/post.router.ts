@@ -27,6 +27,8 @@ import { validate } from "../middlewares/validator.middleware";
 
 const router = Router();
 
+router.use(verifyJWT);
+
 router.route("/all").get(getAllPosts);
 
 router.route("/:postId").get(singlePostValidator(), validate, getSinglePost);
@@ -34,7 +36,6 @@ router
   .route("/:postId/comments")
   .get(getCommentsValidator(), validate, getComments);
 
-router.use(verifyJWT);
 
 router
   .route("/:postId/comment/:commentId")

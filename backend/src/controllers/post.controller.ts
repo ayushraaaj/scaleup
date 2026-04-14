@@ -9,6 +9,7 @@ import { Reaction } from "../models/reaction.model";
 import { Comment } from "../models/comment.model";
 import { generateText } from "@tiptap/core";
 import StarterKit from "@tiptap/starter-kit";
+import mongoose from "mongoose";
 
 export const createPost = asyncHandler(async (req: Request, res: Response) => {
   const mentorId = req.user?._id;
@@ -94,6 +95,7 @@ export const getMentorPosts = asyncHandler(
 
 export const getSinglePost = asyncHandler(
   async (req: Request, res: Response) => {
+    const userId = req.user?._id;
     const { postId } = req.params;
 
     const post = await Post.findById(postId).populate(
@@ -105,7 +107,16 @@ export const getSinglePost = asyncHandler(
       throw new ApiError(404, "Post not found");
     }
 
-    return res.status(200).json(new ApiResponse("Post fetched", post));
+    const liked = await Reaction.findOne({ userId, postId });
+
+    let isLiked = false;
+    if (liked) {
+      isLiked = true;
+    }
+
+    return res
+      .status(200)
+      .json(new ApiResponse("Post fetched", { ...post.toObject(), isLiked }));
   },
 );
 
@@ -119,6 +130,8 @@ export const reactToPost = asyncHandler(async (req: Request, res: Response) => {
   if (!post) {
     throw new ApiError(404, "Post not found");
   }
+
+  // console.log(userId);
 
   const existingReaction = await Reaction.findOne({ postId, userId });
 
