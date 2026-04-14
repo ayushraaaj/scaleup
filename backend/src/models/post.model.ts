@@ -16,6 +16,10 @@ const postSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       required: true,
     },
+    preview: {
+      type: String,
+      required: true,
+    },
     tags: {
       type: [String],
       default: [],

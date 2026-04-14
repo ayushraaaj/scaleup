@@ -11,6 +11,8 @@
   "author": "Ayush Raj",
   "license": "ISC",
   "dependencies": {
+    "@tiptap/core": "^3.22.3",
+    "@tiptap/starter-kit": "^3.22.3",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",

@@ -7,11 +7,17 @@ import { ApiError } from "../utils/ApiError";
 import { Mentor } from "../models/mentor.model";
 import { Reaction } from "../models/reaction.model";
 import { Comment } from "../models/comment.model";
+import { generateText } from "@tiptap/core";
+import StarterKit from "@tiptap/starter-kit";
 
 export const createPost = asyncHandler(async (req: Request, res: Response) => {
   const mentorId = req.user?._id;
 
   const { title, content, tags, visibility } = req.body;
+
+  const plainText = generateText(content, [StarterKit]);
+
+  const preview = plainText.slice(0, 120) + "...";
 
   const post = await Post.create({
     mentorId,
@@ -19,6 +25,7 @@ export const createPost = asyncHandler(async (req: Request, res: Response) => {
     content,
     tags,
     visibility,
+    preview,
   });
 
   return res
