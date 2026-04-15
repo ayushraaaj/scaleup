@@ -247,13 +247,19 @@ export const addComment = asyncHandler(async (req: Request, res: Response) => {
     throw new ApiError(404, "Post not found");
   }
 
-  await Comment.create({ postId: post._id, userId, content });
+  const commentDoc = await Comment.create({
+    postId: post._id,
+    userId,
+    content,
+  });
+
+  const comment = await commentDoc.populate("userId", "fullname username");
 
   await Post.findByIdAndUpdate(postId, {
     $inc: { commentsCount: 1 },
   });
 
-  return res.status(201).json(new ApiResponse("Comment added", {}));
+  return res.status(201).json(new ApiResponse("Comment added", comment));
 });
 
 export const getComments = asyncHandler(async (req: Request, res: Response) => {

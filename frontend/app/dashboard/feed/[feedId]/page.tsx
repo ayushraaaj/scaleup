@@ -14,8 +14,14 @@ const PostDetailPage = () => {
 
   const [post, setPost] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
   const [likes, setLikes] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
+
+  const [commentsCount, setCommentsCount] = useState(0);
+  const [comments, setComments] = useState<any[]>([]);
+  const [newComment, setNewComment] = useState("");
+  const [commentsLoading, setCommentsLoading] = useState(false);
 
   const toggleLike = async () => {
     try {
@@ -29,20 +35,55 @@ const PostDetailPage = () => {
     }
   };
 
+  const fetchPost = async () => {
+    try {
+      const res = await api.get(`/post/${feedId}`);
+      setPost(res.data.data);
+      setLikes(res.data.data.likesCount);
+      setIsLiked(res.data.data.isLiked);
+      setCommentsCount(res.data.data.commentsCount);
+    } catch (error: any) {
+      toast.error("Failed to load report");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchComments = async () => {
+    try {
+      const res = await api.get(`/post/${feedId}/comments`);
+      setComments(res.data.data.comments);
+    } catch (error) {
+      toast.error("Failed to load comments");
+    }
+  };
+
+  const addComment = async () => {
+    if (!newComment.trim()) {
+      return;
+    }
+
+    try {
+      setCommentsLoading(true);
+
+      const res = await api.post(`/post/${feedId}/comment`, {
+        content: newComment,
+      });
+
+      setComments((prev) => [res.data.data, ...prev]);
+
+      toast.success(res.data.message);
+    } catch (error) {
+      toast.error("Failed to add comment");
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        const res = await api.get(`/post/${feedId}`);
-        setPost(res.data.data);
-        setLikes(res.data.data.likesCount);
-        setIsLiked(res.data.data.isLiked);
-      } catch (error: any) {
-        toast.error("Failed to load report");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchPost();
+
+    fetchComments();
   }, [feedId]);
 
   if (loading)
@@ -68,7 +109,7 @@ const PostDetailPage = () => {
 
       <div className="flex flex-col lg:flex-row">
         {/* Left: The Editorial Content */}
-        <article className="flex-1 px-8 lg:px-20 py-16 border-r border-gray-50">
+        <article className="flex-1 px-8 lg:px-20 py-5 border-r border-gray-50">
           <div className="max-w-3xl">
             <header className="mb-12">
               <div className="flex items-center gap-3 mb-6">
@@ -89,7 +130,7 @@ const PostDetailPage = () => {
 
           {post.content && <PostView content={post.content} />}
 
-          <div className="flex items-center gap-10 py-12 border-t border-gray-100 mt-12">
+          <div className="flex items-center gap-10 py-12 border-t border-gray-100">
             <button
               onClick={toggleLike}
               className={`flex items-center gap-2 ${isLiked ? "text-red-600" : "text-gray-500"}`}
@@ -99,8 +140,40 @@ const PostDetailPage = () => {
             </button>
             <button className="flex items-center gap-2 text-gray-500">
               <MessageSquare size={24} />
-              <span className="font-black text-lg">{post.commentsCount}</span>
+              <span className="font-black text-lg">{commentsCount}</span>
             </button>
+          </div>
+
+          <div>
+            <h3>Comments</h3>
+
+            <div>
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder="Write a comment..."
+              />
+
+              <button disabled={commentsLoading} onClick={addComment}>
+                {commentsLoading ? "Posting..." : "Post"}
+              </button>
+            </div>
+
+            <div>
+              {comments.length === 0 && <p>No comments yet</p>}
+              {comments.map((comment) => (
+                <div key={comment._id}>
+                  <p>
+                    {`${comment.userId.fullname} (${comment.userId.username})`}
+                  </p>
+
+                  <p>{comment.content}</p>
+
+                  <p>{comment.updatedAt}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </article>
 
