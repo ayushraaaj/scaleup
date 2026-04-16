@@ -130,7 +130,7 @@ const PostDetailPage = () => {
 
           {post.content && <PostView content={post.content} />}
 
-          <div className="flex items-center gap-10 py-12 border-t border-gray-100">
+          <div className="flex items-center gap-10 py-8 border-t border-gray-200">
             <button
               onClick={toggleLike}
               className={`flex items-center gap-2 ${isLiked ? "text-red-600" : "text-gray-500"}`}
@@ -144,35 +144,76 @@ const PostDetailPage = () => {
             </button>
           </div>
 
-          <div>
-            <h3>Comments</h3>
+          <div className="">
+            <h3 className="text-2xl font-black uppercase tracking-tighter mb-10 flex items-center gap-3">
+              Discussions{" "}
+              <span className="text-blue-600 italic">({commentsCount})</span>
+            </h3>
 
-            <div>
-              <input
-                type="text"
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder="Write a comment..."
-              />
+            <div className="mb-16 group">
+              <div className="relative border-2 border-gray-200 group-focus-within:border-black transition-all bg-[#fcfcfc]">
+                <textarea
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Add your analysis or question to this thread..."
+                  className="w-full p-6 text-sm font-medium outline-none resize-none h-32 bg-transparent placeholder:text-gray-300"
+                />
 
-              <button disabled={commentsLoading} onClick={addComment}>
-                {commentsLoading ? "Posting..." : "Post"}
-              </button>
+                <div className="h-1 w-0 bg-blue-600 group-focus-within:w-full transition-all duration-700" />
+              </div>
+
+              <div className="flex justify-end mt-4">
+                <button
+                  disabled={commentsLoading}
+                  onClick={addComment}
+                  className="bg-black text-white px-10 py-4 font-black uppercase text-[10px] tracking-[0.2em] shadow-[6px_6px_0px_0px_rgba(59,130,246,1)] hover:translate-1 hover:shadow-none transition-all flex items-center gap-2 disabled:bg-gray-400"
+                >
+                  {commentsLoading ? "Syncing..." : "Post Comment"}
+                </button>
+              </div>
             </div>
 
-            <div>
-              {comments.length === 0 && <p>No comments yet</p>}
-              {comments.map((comment) => (
-                <div key={comment._id}>
-                  <p>
-                    {`${comment.userId.fullname} (${comment.userId.username})`}
+            {/* Comments Feed */}
+            <div className="space-y-10">
+              {comments.length === 0 ? (
+                <div className="border-2 border-dashed border-gray-200 p-10 text-center">
+                  <p className="text-xs font-black uppercase tracking-widest text-gray-400 italic">
+                    The discussion is empty. Be the first to scale up.
                   </p>
-
-                  <p>{comment.content}</p>
-
-                  <p>{comment.updatedAt}</p>
                 </div>
-              ))}
+              ) : (
+                comments.map((comment) => (
+                  <div
+                    key={comment._id}
+                    className="relative pl-6 border-l-2 border-gray-100 hover:border-black transition-colors pb-2"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-6 h-6 bg-black flex items-center justify-center">
+                        <span className="text-[10px] font-black text-white">
+                          {comment.userId.fullname.charAt(0)}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="text-[11px] font-black uppercase leading-none tracking-tight">
+                          {comment.userId.fullname}
+                        </p>
+                        <p className="text-[9px] font-bold text-blue-600 italic">
+                          @{comment.userId.username}
+                        </p>
+                      </div>
+                      <span className="ml-auto text-[9px] font-bold text-gray-300 uppercase tracking-widest">
+                        {new Date(comment.updatedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    <div className="bg-white p-4 border border-gray-100 group-hover:border-gray-200 transition-all">
+                      <p className="text-gray-700 text-sm leading-relaxed font-medium">
+                        {comment.content}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </article>
