@@ -6,182 +6,216 @@ import { ApiResponse } from "../utils/ApiResponse";
 import { Booking } from "../models/booking.model";
 
 export const createMontorProfile = asyncHandler(
-    async (req: Request, res: Response) => {
-        const userId = req.user?._id;
+  async (req: Request, res: Response) => {
+    const userId = req.user?._id;
 
-        const { bio, expertise, pricing } = req.body;
+    const { bio, expertise, pricing } = req.body;
 
-        const existingMentor = await Mentor.findOne({ userId });
+    const existingMentor = await Mentor.findOne({ userId });
 
-        if (existingMentor) {
-            throw new ApiError(409, "Mentor profile already exists");
-        }
+    if (existingMentor) {
+      throw new ApiError(409, "Mentor profile already exists");
+    }
 
-        const mentorProfile = await Mentor.create({
-            userId,
-            bio,
-            expertise,
-            pricing,
-        });
+    const mentorProfile = await Mentor.create({
+      userId,
+      bio,
+      expertise,
+      pricing,
+    });
 
-        return res
-            .status(201)
-            .json(
-                new ApiResponse(
-                    "Mentor profile created successfully",
-                    mentorProfile,
-                ),
-            );
-    },
+    return res
+      .status(201)
+      .json(
+        new ApiResponse("Mentor profile created successfully", mentorProfile),
+      );
+  },
+);
+
+export const getAllMentors = asyncHandler(
+  async (req: Request, res: Response) => {
+    const page = Number(req.params.page) || 1;
+    const limit = Number(req.params.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const mentors = await Mentor.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("userId", "fullname username");
+
+    const totalMentors = await Mentor.countDocuments();
+
+    return res.status(200).json(
+      new ApiResponse("Mentors fetched", {
+        mentors,
+        totalMentors,
+        totalPages: Math.ceil(totalMentors / limit),
+      }),
+    );
+  },
+);
+
+export const getSingleMentor = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { mentorId } = req.params;
+
+    const mentor = await Mentor.findById(mentorId).populate('userId', "fullname username");
+
+    if (!mentor) {
+      throw new ApiError(404, "Mentor not found");
+    }
+
+    return res
+      .status(200)
+      .json(new ApiResponse("Mentor detail fetched", mentor));
+  },
 );
 
 export const updateAvailability = asyncHandler(
-    async (req: Request, res: Response) => {
-        const userId = req.user?._id;
-        const { availability } = req.body;
+  async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+    const { availability } = req.body;
 
-        const mentor = await Mentor.findOne({ userId });
+    const mentor = await Mentor.findOne({ userId });
 
-        if (!mentor) {
-            throw new ApiError(404, "Mentor not found");
+    if (!mentor) {
+      throw new ApiError(404, "Mentor not found");
+    }
+
+    console.log(availability);
+
+    // Validate start time and end time
+    for (const day of availability) {
+      for (const slot of day.slots) {
+        if (slot.startTime >= slot.endTime) {
+          throw new ApiError(400, `Invalid time ranges for ${day.dayOfWeek}`);
         }
+      }
 
-        console.log(availability);
+      // Sorting availability array
+      const sortedSlots = [...day.slots].sort((a, b) =>
+        a.startTime.localeCompare(b.startTime),
+      );
 
-        // Validate start time and end time
-        for (const day of availability) {
-            for (const slot of day.slots) {
-                if (slot.startTime >= slot.endTime) {
-                    throw new ApiError(
-                        400,
-                        `Invalid time ranges for ${day.dayOfWeek}`,
-                    );
-                }
-            }
-
-            // Sorting availability array
-            const sortedSlots = [...day.slots].sort((a, b) =>
-                a.startTime.localeCompare(b.startTime),
-            );
-
-            // Checking for overlapping of a day
-            for (let i = 1; i < sortedSlots.length; i++) {
-                if (sortedSlots[i].startTime < sortedSlots[i - 1].endTime) {
-                    throw new ApiError(
-                        400,
-                        `Overlapping slots detected on day ${day.dayOfWeek}`,
-                    );
-                }
-            }
+      // Checking for overlapping of a day
+      for (let i = 1; i < sortedSlots.length; i++) {
+        if (sortedSlots[i].startTime < sortedSlots[i - 1].endTime) {
+          throw new ApiError(
+            400,
+            `Overlapping slots detected on day ${day.dayOfWeek}`,
+          );
         }
+      }
+    }
 
-        mentor.availability = availability;
-        await mentor.save({ validateBeforeSave: false });
+    mentor.availability = availability;
+    await mentor.save({ validateBeforeSave: false });
 
-        return res
-            .status(200)
-            .json(
-                new ApiResponse(
-                    "Availability updated successfully",
-                    mentor.availability,
-                ),
-            );
-    },
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(
+          "Availability updated successfully",
+          mentor.availability,
+        ),
+      );
+  },
 );
 
 const combineDateAndTime = (date: Date, time: string) => {
-    const [hours, minutes] = time.split(":").map(Number);
+  const [hours, minutes] = time.split(":").map(Number);
 
-    const newDate = new Date(date);
-    newDate.setHours(hours, minutes, 0, 0);
+  const newDate = new Date(date);
+  newDate.setHours(hours, minutes, 0, 0);
 
-    return newDate;
+  return newDate;
 };
 
 export const getAvailability = asyncHandler(
-    async (req: Request, res: Response) => {
-        const userId = req.user?._id;
-        const { mentorId } = req.params;
-        const { date } = req.query;
+  async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+    const { mentorId } = req.params;
+    const { date } = req.query;
 
-        const requestedDate = new Date(date as string);
-        if (isNaN(requestedDate.getTime())) {
-            throw new ApiError(400, "Invalid date format");
-        }
+    const requestedDate = new Date(date as string);
+    if (isNaN(requestedDate.getTime())) {
+      throw new ApiError(400, "Invalid date format");
+    }
 
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-        if (requestedDate < today) {
-            throw new ApiError(400, "Cannot book past dates");
-        }
+    if (requestedDate < today) {
+      throw new ApiError(400, "Cannot book past dates");
+    }
 
-        const maxBookingDate = new Date(today);
-        maxBookingDate.setDate(today.getDate() + 30);
+    const maxBookingDate = new Date(today);
+    maxBookingDate.setDate(today.getDate() + 30);
 
-        if (requestedDate > maxBookingDate) {
-            throw new ApiError(400, "Booking allowed only within next 30 days");
-        }
+    if (requestedDate > maxBookingDate) {
+      throw new ApiError(400, "Booking allowed only within next 30 days");
+    }
 
-        const dayOfWeek = requestedDate.getDay();
+    const dayOfWeek = requestedDate.getDay();
 
-        const mentor = await Mentor.findOne({ userId: mentorId });
+    const mentor = await Mentor.findOne({ userId: mentorId });
 
-        if (!mentor) {
-            throw new ApiError(404, "Mentor not found");
-        }
+    if (!mentor) {
+      throw new ApiError(404, "Mentor not found");
+    }
 
-        const availability = mentor.availability.find(
-            (a) => a.dayOfWeek === dayOfWeek,
+    const availability = mentor.availability.find(
+      (a) => a.dayOfWeek === dayOfWeek,
+    );
+
+    if (!availability) {
+      return res
+        .status(200)
+        .json(new ApiResponse("Mentor is not available", {}));
+    }
+
+    const startOfDay = new Date(requestedDate);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(requestedDate);
+    endOfDay.setHours(11, 59, 59, 999);
+
+    const bookings = await Booking.find({
+      mentorId,
+      startTime: { $gte: startOfDay, $lte: endOfDay },
+      $or: [
+        { status: "confirmed" },
+        { status: "pending", expiresAt: { $gt: new Date() } },
+      ],
+    });
+
+    const availableSlots = [];
+
+    for (const slot of availability.slots) {
+      let startSlot = combineDateAndTime(requestedDate, slot.startTime);
+      let endSlot = combineDateAndTime(requestedDate, slot.endTime);
+
+      while (startSlot < endSlot) {
+        const nextSlot = new Date(startSlot.getTime() + 30 * 60 * 1000);
+
+        const overlapping = bookings.find(
+          (b) => b.endTime > startSlot && b.startTime < nextSlot,
         );
 
-        if (!availability) {
-            return res
-                .status(200)
-                .json(new ApiResponse("Mentor is not available", {}));
+        if (!overlapping) {
+          availableSlots.push({
+            startTime: startSlot.toISOString(),
+            endTime: nextSlot.toISOString(),
+          });
         }
 
-        const startOfDay = new Date(requestedDate);
-        startOfDay.setHours(0, 0, 0, 0);
+        startSlot = nextSlot;
+      }
+    }
 
-        const endOfDay = new Date(requestedDate);
-        endOfDay.setHours(11, 59, 59, 999);
-
-        const bookings = await Booking.find({
-            mentorId,
-            startTime: { $gte: startOfDay, $lte: endOfDay },
-            $or: [
-                { status: "confirmed" },
-                { status: "pending", expiresAt: { $gt: new Date() } },
-            ],
-        });
-
-        const availableSlots = [];
-
-        for (const slot of availability.slots) {
-            let startSlot = combineDateAndTime(requestedDate, slot.startTime);
-            let endSlot = combineDateAndTime(requestedDate, slot.endTime);
-
-            while (startSlot < endSlot) {
-                const nextSlot = new Date(startSlot.getTime() + 30 * 60 * 1000);
-
-                const overlapping = bookings.find(
-                    (b) => b.endTime > startSlot && b.startTime < nextSlot,
-                );
-
-                if (!overlapping) {
-                    availableSlots.push({
-                        startTime: startSlot.toISOString(),
-                        endTime: nextSlot.toISOString(),
-                    });
-                }
-
-                startSlot = nextSlot;
-            }
-        }
-
-        return res
-            .status(200)
-            .json(new ApiResponse("Available slots", availableSlots));
-    },
+    return res
+      .status(200)
+      .json(new ApiResponse("Available slots", availableSlots));
+  },
 );

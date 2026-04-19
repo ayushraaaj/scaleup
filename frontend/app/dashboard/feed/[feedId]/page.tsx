@@ -38,9 +38,12 @@ const PostDetailPage = () => {
   const fetchPost = async () => {
     try {
       const res = await api.get(`/post/${feedId}`);
+
       setPost(res.data.data);
+
       setLikes(res.data.data.likesCount);
       setIsLiked(res.data.data.isLiked);
+
       setCommentsCount(res.data.data.commentsCount);
     } catch (error: any) {
       toast.error("Failed to load report");
@@ -89,7 +92,7 @@ const PostDetailPage = () => {
   if (loading)
     return (
       <div className="p-20 font-black uppercase animate-pulse">
-        Analyzing Report...
+        Loading Article...
       </div>
     );
   if (!post)

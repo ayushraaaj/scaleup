@@ -1,14 +1,17 @@
 import { Router } from "express";
 import { checkIfMentor, verifyJWT } from "../middlewares/auth.middleware";
 import {
-    createMontorProfile,
-    getAvailability,
-    updateAvailability,
+  createMontorProfile,
+  getAllMentors,
+  getAvailability,
+  getSingleMentor,
+  updateAvailability,
 } from "../controllers/mentor.controller";
 import {
-    getAvailabilityValidator,
-    mentorProfileValidator,
-    updateAvailabilityValidator,
+  getAvailabilityValidator,
+  mentorProfileValidator,
+  singleMentorValidator,
+  updateAvailabilityValidator,
 } from "../validators/mentor.validator";
 import { validate } from "../middlewares/validator.middleware";
 import { getMentorPosts } from "../controllers/post.controller";
@@ -20,17 +23,23 @@ router.route("/:username/posts").get(getMentorPosts);
 router.use(verifyJWT);
 
 router
-    .route("/profile")
-    .post(mentorProfileValidator(), validate, createMontorProfile);
+  .route("/profile")
+  .post(mentorProfileValidator(), validate, createMontorProfile);
+
+router.route("/all").get(getAllMentors);
 
 router
-    .route("/:mentorId/availability")
-    .get(getAvailabilityValidator(), validate, getAvailability);
+  .route("/:mentorId")
+  .get(singleMentorValidator(), validate, getSingleMentor);
+
+router
+  .route("/:mentorId/availability")
+  .get(getAvailabilityValidator(), validate, getAvailability);
 
 router.use(checkIfMentor);
 
 router
-    .route("/availability")
-    .patch(updateAvailabilityValidator(), validate, updateAvailability);
+  .route("/availability")
+  .patch(updateAvailabilityValidator(), validate, updateAvailability);
 
 export default router;

@@ -32,10 +32,6 @@ const Feed = () => {
           (post: any) => !existingIds.has(post._id),
         );
 
-        // prev.posts = [...prev.posts, ...uniqueItems];
-
-        // return prev;
-
         return {
           ...prev,
           posts: [...prev.posts, ...uniqueItems],
