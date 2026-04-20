@@ -29,7 +29,7 @@ router
 router.route("/all").get(getAllMentors);
 
 router
-  .route("/:mentorId")
+  .route("/:username")
   .get(singleMentorValidator(), validate, getSingleMentor);
 
 router

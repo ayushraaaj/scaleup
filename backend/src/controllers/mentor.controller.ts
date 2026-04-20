@@ -4,6 +4,7 @@ import { Mentor } from "../models/mentor.model";
 import { ApiError } from "../utils/ApiError";
 import { ApiResponse } from "../utils/ApiResponse";
 import { Booking } from "../models/booking.model";
+import { User } from "../models/user.model";
 
 export const createMontorProfile = asyncHandler(
   async (req: Request, res: Response) => {
@@ -58,9 +59,18 @@ export const getAllMentors = asyncHandler(
 
 export const getSingleMentor = asyncHandler(
   async (req: Request, res: Response) => {
-    const { mentorId } = req.params;
+    const { username } = req.params;
 
-    const mentor = await Mentor.findById(mentorId).populate('userId', "fullname username");
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+
+    const mentor = await Mentor.findOne({ userId: user._id }).populate(
+      "userId",
+      "fullname username",
+    );
 
     if (!mentor) {
       throw new ApiError(404, "Mentor not found");

@@ -46,7 +46,7 @@ const PostDetailPage = () => {
 
       setCommentsCount(res.data.data.commentsCount);
     } catch (error: any) {
-      toast.error("Failed to load report");
+      toast.error("Failed to load article");
     } finally {
       setLoading(false);
     }
@@ -80,6 +80,15 @@ const PostDetailPage = () => {
       toast.error("Failed to add comment");
     } finally {
       setCommentsLoading(false);
+    }
+  };
+
+  const redirectToMentor = async () => {
+    try {
+      // toast.success("Redirecting to mentor page...");
+      router.push(`/dashboard/mentors/${post.mentorId.username}`);
+    } catch (error) {
+      toast.error("Failed to load mentor page");
     }
   };
 
@@ -230,7 +239,10 @@ const PostDetailPage = () => {
             <h2 className="text-xl font-black uppercase tracking-tighter mb-6">
               ScaleUp with {post.mentorId.fullname}
             </h2>
-            <button className="w-full bg-white text-black py-4 font-black uppercase text-xs flex items-center justify-center gap-2 hover:bg-blue-600 hover:text-white transition-all">
+            <button
+              onClick={redirectToMentor}
+              className="w-full bg-white text-black py-4 font-black uppercase text-xs flex items-center justify-center gap-2 hover:bg-blue-600 hover:text-white transition-all"
+            >
               <Zap size={16} fill="currentColor" /> Book 1:1 Session
             </button>
           </div>

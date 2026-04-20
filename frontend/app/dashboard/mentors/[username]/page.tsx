@@ -29,7 +29,7 @@ interface MentorData {
 }
 
 const MentorDetails = () => {
-  const { mentorId } = useParams();
+  const { username } = useParams();
   const router = useRouter();
 
   const [mentor, setMentor] = useState<MentorData | null>(null);
@@ -37,7 +37,7 @@ const MentorDetails = () => {
 
   const fetchMentor = async () => {
     try {
-      const res = await api.get(`/mentor/${mentorId}`);
+      const res = await api.get(`/mentor/${username}`);
       setMentor(res.data.data);
     } catch (error: any) {
       toast.error("Failed to load mentor data");
@@ -48,7 +48,7 @@ const MentorDetails = () => {
 
   useEffect(() => {
     fetchMentor();
-  }, [mentorId]);
+  }, [username]);
 
   if (loading)
     return (
@@ -84,9 +84,9 @@ const MentorDetails = () => {
                 <span className="bg-black text-white px-2 py-1 text-[9px] font-black uppercase tracking-tighter">
                   Verified Expert
                 </span>
-                <span className="border border-gray-200 px-2 py-1 text-[9px] font-black uppercase tracking-tighter">
+                {/* <span className="border border-gray-200 px-2 py-1 text-[9px] font-black uppercase tracking-tighter">
                   ID: {mentorId?.toString().slice(-8).toUpperCase()}
-                </span>
+                </span> */}
               </div>
 
               <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-[0.8] mb-6">
@@ -176,13 +176,13 @@ const MentorDetails = () => {
             </h3>
 
             {/* Video Call Card */}
-            <div className="bg-white border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all group">
+            <div className="bg-white border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all group">
               <div className="flex justify-between items-start mb-4">
                 <div className="p-3 bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                   <Video size={24} />
                 </div>
                 <span className="text-3xl font-black">
-                  ${mentor.pricing.video}
+                  ₹{mentor.pricing.video}
                 </span>
               </div>
               <h4 className="text-lg font-black uppercase tracking-tighter">
@@ -197,13 +197,13 @@ const MentorDetails = () => {
             </div>
 
             {/* Audio Call Card */}
-            <div className="bg-white border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(37,99,235,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all group">
+            <div className="bg-white border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(37,99,235,1)] transition-all group">
               <div className="flex justify-between items-start mb-4">
                 <div className="p-3 bg-gray-50 text-black group-hover:bg-black group-hover:text-white transition-colors">
                   <Mic size={24} />
                 </div>
                 <span className="text-3xl font-black">
-                  ${mentor.pricing.audio}
+                  ₹{mentor.pricing.audio}
                 </span>
               </div>
               <h4 className="text-lg font-black uppercase tracking-tighter">
@@ -212,7 +212,7 @@ const MentorDetails = () => {
               <p className="text-[10px] text-gray-500 font-bold uppercase mb-6">
                 Per 30 Minute Session
               </p>
-              <button className="w-full border-2 border-black text-black py-4 font-black uppercase text-xs flex items-center justify-center gap-2 tracking-widest hover:bg-black hover:text-white transition-all">
+              <button className="w-full border-2 border-black text-black py-4 font-black uppercase text-xs flex items-center justify-center gap-2 tracking-widest group-hover:bg-black group-hover:text-white transition-all">
                 Reserve Audio Slot
               </button>
             </div>

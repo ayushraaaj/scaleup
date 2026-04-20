@@ -37,7 +37,15 @@ export const mentorProfileValidator = () => {
 };
 
 export const singleMentorValidator = () => {
-  return [param("mentorId").isMongoId().withMessage("Invalid mentor ID")];
+  return [
+    param("username")
+      .trim()
+      .notEmpty()
+      .withMessage("Username is required")
+      .bail()
+      .isAlphanumeric()
+      .withMessage("Username must be alphanumeric"),
+  ];
 };
 
 export const updateAvailabilityValidator = () => {
