@@ -167,17 +167,15 @@ export const getAvailability = asyncHandler(
       throw new ApiError(400, "Booking allowed only within next 30 days");
     }
 
-    const dayOfWeek = requestedDate.getDay();
+    // const dayOfWeek = requestedDate.getDay();
 
-    const mentor = await Mentor.findOne({ userId: mentorId });
+    const mentor = await Mentor.findById({ _id: mentorId });
 
     if (!mentor) {
       throw new ApiError(404, "Mentor not found");
     }
 
-    const availability = mentor.availability.find(
-      (a) => a.dayOfWeek === dayOfWeek,
-    );
+    const availability = mentor.availability.find((a) => a.date === date);
 
     if (!availability) {
       return res
@@ -207,7 +205,7 @@ export const getAvailability = asyncHandler(
       let endSlot = combineDateAndTime(requestedDate, slot.endTime);
 
       while (startSlot < endSlot) {
-        const nextSlot = new Date(startSlot.getTime() + 30 * 60 * 1000);
+        const nextSlot = new Date(startSlot.getTime() + 60 * 60 * 1000);
 
         const overlapping = bookings.find(
           (b) => b.endTime > startSlot && b.startTime < nextSlot,

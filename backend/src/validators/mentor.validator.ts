@@ -52,9 +52,7 @@ export const updateAvailabilityValidator = () => {
   return [
     body("availability").isArray().withMessage("Availability must be an array"),
 
-    body("availability.*.dayOfWeek")
-      .isInt({ min: 0, max: 6 })
-      .withMessage("Day of week must be between 0 and 6"),
+    body("availability.*.date").isDate().withMessage("Date is invalid"),
 
     body("availability.*.slots")
       .isArray({ min: 1 })

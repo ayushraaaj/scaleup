@@ -14,6 +14,7 @@ import {
 import toast from "react-hot-toast";
 
 interface MentorData {
+  _id: string;
   userId: {
     fullname: string;
     username: string;
@@ -26,14 +27,29 @@ interface MentorData {
   };
   ratings: number;
   totalSessions: number;
+  availability: Availability[];
 }
 
+interface TimeSlot {
+  startTime: string;
+  endTime: string;
+}
+
+interface Availability {
+  date: string;
+  slots: TimeSlot[];
+}
 const MentorDetails = () => {
   const { username } = useParams();
   const router = useRouter();
 
   const [mentor, setMentor] = useState<MentorData | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const [slots, setSlots] = useState<TimeSlot[] | null>(null);
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [availableDates, setAvailableDates] = useState<string[] | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const fetchMentor = async () => {
     try {
@@ -43,6 +59,33 @@ const MentorDetails = () => {
       toast.error("Failed to load mentor data");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getAvailability = (type: string) => {
+    if (!mentor) {
+      return;
+    }
+
+    setSelectedType(type);
+
+    const dates = mentor.availability.map((a) => a.date) ?? null;
+    console.log(dates);
+    setAvailableDates(dates);
+  };
+
+  const getSlots = async (date: string) => {
+    if (!mentor) {
+      return;
+    }
+
+    try {
+      const res = await api.get(`/mentor/${mentor._id}/availability`, {
+        params: { date },
+      });
+      setSlots(res.data.data);
+    } catch (error) {
+      toast.error("Failed to load slots");
     }
   };
 
@@ -84,9 +127,6 @@ const MentorDetails = () => {
                 <span className="bg-black text-white px-2 py-1 text-[9px] font-black uppercase tracking-tighter">
                   Verified Expert
                 </span>
-                {/* <span className="border border-gray-200 px-2 py-1 text-[9px] font-black uppercase tracking-tighter">
-                  ID: {mentorId?.toString().slice(-8).toUpperCase()}
-                </span> */}
               </div>
 
               <h1 className="text-6xl lg:text-8xl font-black tracking-tighter uppercase leading-[0.8] mb-6">
@@ -191,7 +231,10 @@ const MentorDetails = () => {
               <p className="text-[10px] text-gray-500 font-bold uppercase mb-6">
                 Per 60 Minute Session
               </p>
-              <button className="w-full bg-black text-white py-4 font-black uppercase text-xs flex items-center justify-center gap-2 tracking-widest group-hover:bg-blue-600 transition-colors">
+              <button
+                onClick={() => getAvailability("video")}
+                className="w-full bg-black text-white py-4 font-black uppercase text-xs flex items-center justify-center gap-2 tracking-widest group-hover:bg-blue-600 transition-colors"
+              >
                 <Zap size={14} fill="currentColor" /> Book Video Call
               </button>
             </div>
@@ -212,7 +255,10 @@ const MentorDetails = () => {
               <p className="text-[10px] text-gray-500 font-bold uppercase mb-6">
                 Per 30 Minute Session
               </p>
-              <button className="w-full border-2 border-black text-black py-4 font-black uppercase text-xs flex items-center justify-center gap-2 tracking-widest group-hover:bg-black group-hover:text-white transition-all">
+              <button
+                onClick={() => getAvailability("video")}
+                className="w-full border-2 border-black text-black py-4 font-black uppercase text-xs flex items-center justify-center gap-2 tracking-widest group-hover:bg-black group-hover:text-white transition-all"
+              >
                 Reserve Audio Slot
               </button>
             </div>
@@ -233,6 +279,21 @@ const MentorDetails = () => {
           </div>
         </aside>
       </div>
+
+      {availableDates?.map((date) => (
+        <span key={date}>
+          <button onClick={() => getSlots(date)} key={date}>
+            {date}
+          </button>{" "}
+        </span>
+      ))}
+
+      {slots?.map((slot) => (
+        <div key={slot.startTime}>
+          <p>Start Time: {slot.startTime}</p>
+          <p>End Time: {slot.endTime}</p>
+        </div>
+      ))}
     </div>
   );
 };
