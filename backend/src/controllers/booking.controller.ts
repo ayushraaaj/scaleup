@@ -47,7 +47,7 @@ export const createBooking = asyncHandler(
     // }
 
     const date = start.toISOString().slice(0, 10);
-    console.log(date);
+    // console.log(date);
 
     const availability = mentor.availability.find((a) => a.date === date);
 

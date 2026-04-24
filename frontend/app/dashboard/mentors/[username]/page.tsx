@@ -61,6 +61,8 @@ const MentorDetails = () => {
     try {
       const res = await api.get(`/mentor/${username}`);
       setMentor(res.data.data);
+
+      await getAvailability("video");
     } catch (error: any) {
       toast.error("Failed to load mentor data");
     } finally {
@@ -121,6 +123,10 @@ const MentorDetails = () => {
   useEffect(() => {
     fetchMentor();
   }, [username]);
+
+  useEffect(() => {
+    getAvailability("video");
+  }, [mentor]);
 
   if (loading)
     return (
@@ -285,7 +291,7 @@ const MentorDetails = () => {
                 Per 30 Minute Session
               </p>
               <button
-                onClick={() => getAvailability("video")}
+                onClick={() => getAvailability("audio")}
                 className="w-full border-2 border-black text-black py-4 font-black uppercase text-xs flex items-center justify-center gap-2 tracking-widest group-hover:bg-black group-hover:text-white transition-all"
               >
                 Reserve Audio Slot
