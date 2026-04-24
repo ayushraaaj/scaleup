@@ -9,7 +9,7 @@ const router = Router();
 router.use(verifyJWT);
 
 router
-    .route("/:mentorId")
-    .post(createBookingValidator(), validate, createBooking);
+  .route("/:mentorId")
+  .post(createBookingValidator(), validate, createBooking);
 
 export default router;

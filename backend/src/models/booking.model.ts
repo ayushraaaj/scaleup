@@ -25,10 +25,10 @@ const bookingSchema = new mongoose.Schema(
             type: Date,
             required: true,
         },
-        durationInMinutes: {
-            type: Number,
-            required: true,
-        },
+        // durationInMinutes: {
+        //     type: Number,
+        //     required: true,
+        // },
         hourlyRate: {
             type: Number,
             required: true,

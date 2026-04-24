@@ -39,6 +39,12 @@ interface Availability {
   date: string;
   slots: TimeSlot[];
 }
+
+interface SlotTime {
+  startTime: string;
+  endTime: string;
+}
+
 const MentorDetails = () => {
   const { username } = useParams();
   const router = useRouter();
@@ -47,9 +53,9 @@ const MentorDetails = () => {
   const [loading, setLoading] = useState(true);
 
   const [slots, setSlots] = useState<TimeSlot[] | null>(null);
-  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [sessionType, setSessionType] = useState<string | null>(null);
   const [availableDates, setAvailableDates] = useState<string[] | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<SlotTime | null>(null);
 
   const fetchMentor = async () => {
     try {
@@ -67,7 +73,7 @@ const MentorDetails = () => {
       return;
     }
 
-    setSelectedType(type);
+    setSessionType(type);
 
     const dates = mentor.availability.map((a) => a.date) ?? null;
     console.log(dates);
@@ -86,6 +92,29 @@ const MentorDetails = () => {
       setSlots(res.data.data);
     } catch (error) {
       toast.error("Failed to load slots");
+    }
+  };
+
+  const setSlot = async (startTime: string, endTime: string) => {
+    setSelectedSlot({ startTime, endTime });
+    console.log(`Slots: ${startTime} ${endTime}`);
+  };
+
+  const confirmBooking = async () => {
+    if (!mentor || !sessionType || !selectedSlot) {
+      return;
+    }
+
+    try {
+      const res = await api.post(`booking/${mentor._id}`, {
+        sessionType,
+        startTime: selectedSlot.startTime,
+        endTime: selectedSlot.endTime,
+      });
+
+      toast.success(res.data.message);
+    } catch (error) {
+      toast.error("Failed to book");
     }
   };
 
@@ -288,12 +317,29 @@ const MentorDetails = () => {
         </span>
       ))}
 
-      {slots?.map((slot) => (
-        <div key={slot.startTime}>
-          <p>Start Time: {slot.startTime}</p>
-          <p>End Time: {slot.endTime}</p>
-        </div>
-      ))}
+      {slots && (
+        <>
+          {slots.map((slot) => (
+            <div key={slot.startTime}>
+              {/* <p>Start Time: {slot.startTime}</p>
+          <p>End Time: {slot.endTime}</p> */}
+
+              <button
+                onClick={() => setSlot(slot.startTime, slot.endTime)}
+              >{`${slot.startTime} ${slot.endTime}`}</button>
+            </div>
+          ))}
+          <select
+            value={sessionType ?? ""}
+            onChange={(e) => setSessionType(e.target.value)}
+          >
+            <option value="video">Video Consultation</option>
+            <option value="audio">Audio Strategy</option>
+          </select>
+
+          <button onClick={confirmBooking}>Confirm</button>
+        </>
+      )}
     </div>
   );
 };
