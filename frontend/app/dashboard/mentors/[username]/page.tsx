@@ -57,7 +57,6 @@ const MentorDetails = () => {
   const [availableDates, setAvailableDates] = useState<string[] | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<SlotTime | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [bookingConfirmed, setBookingConfirmed] = useState(false);
 
   const fetchMentor = async () => {
     try {
@@ -80,7 +79,7 @@ const MentorDetails = () => {
     setSessionType(type);
 
     const dates = mentor.availability.map((a) => a.date) ?? null;
-    console.log(dates);
+
     setAvailableDates(dates);
   };
 
@@ -121,9 +120,14 @@ const MentorDetails = () => {
       });
 
       toast.success(res.data.message);
-      setBookingConfirmed(true);
+
+      setSlots((prev) => {
+        if (!prev) {
+          return null;
+        }
+        return prev.filter((p) => p.startTime !== selectedSlot.startTime);
+      });
     } catch (error: any) {
-      setBookingConfirmed(false);
       toast.error(error.response.data.message ?? "Failed to book");
     }
   };
@@ -135,13 +139,6 @@ const MentorDetails = () => {
   useEffect(() => {
     getAvailability("video");
   }, [mentor]);
-
-  useEffect(() => {
-    if (selectedDate) {
-      getSlots(selectedDate);
-      setBookingConfirmed(false);
-    }
-  }, [bookingConfirmed]);
 
   if (loading)
     return (
