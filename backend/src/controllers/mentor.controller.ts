@@ -93,7 +93,7 @@ export const updateAvailability = asyncHandler(
       throw new ApiError(404, "Mentor not found");
     }
 
-    console.log(availability);
+    // console.log(availability);
 
     // Validate start time and end time
     for (const day of availability) {
@@ -133,15 +133,6 @@ export const updateAvailability = asyncHandler(
   },
 );
 
-const combineDateAndTime = (date: Date, time: string) => {
-  const [hours, minutes] = time.split(":").map(Number);
-
-  const newDate = new Date(date);
-  newDate.setHours(hours, minutes, 0, 0);
-
-  return newDate;
-};
-
 export const getAvailability = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?._id;
@@ -167,8 +158,6 @@ export const getAvailability = asyncHandler(
       throw new ApiError(400, "Booking allowed only within next 30 days");
     }
 
-    // const dayOfWeek = requestedDate.getDay();
-
     const mentor = await Mentor.findById({ _id: mentorId });
 
     if (!mentor) {
@@ -176,6 +165,7 @@ export const getAvailability = asyncHandler(
     }
 
     const availability = mentor.availability.find((a) => a.date === date);
+    // console.log(availability);
 
     if (!availability) {
       return res
@@ -183,15 +173,9 @@ export const getAvailability = asyncHandler(
         .json(new ApiResponse("Mentor is not available", {}));
     }
 
-    const startOfDay = new Date(requestedDate);
-    startOfDay.setHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(requestedDate);
-    endOfDay.setHours(11, 59, 59, 999);
-
     const bookings = await Booking.find({
       mentorId,
-      startTime: { $gte: startOfDay, $lte: endOfDay },
+      date,
       $or: [
         { status: "confirmed" },
         { status: "pending", expiresAt: { $gt: new Date() } },
@@ -201,11 +185,14 @@ export const getAvailability = asyncHandler(
     const availableSlots = [];
 
     for (const slot of availability.slots) {
-      let startSlot = combineDateAndTime(requestedDate, slot.startTime);
-      let endSlot = combineDateAndTime(requestedDate, slot.endTime);
+      let startSlot = slot.startTime;
+      let endSlot = slot.endTime;
 
       while (startSlot < endSlot) {
-        const nextSlot = new Date(startSlot.getTime() + 60 * 60 * 1000);
+        let [hours, minutes] = startSlot.split(":").map(Number);
+        let nextHour = hours + 1;
+
+        const nextSlot = `${nextHour.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
 
         const overlapping = bookings.find(
           (b) => b.endTime > startSlot && b.startTime < nextSlot,
@@ -213,8 +200,8 @@ export const getAvailability = asyncHandler(
 
         if (!overlapping) {
           availableSlots.push({
-            startTime: startSlot.toISOString(),
-            endTime: nextSlot.toISOString(),
+            startTime: startSlot,
+            endTime: nextSlot,
           });
         }
 

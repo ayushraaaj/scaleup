@@ -48,11 +48,11 @@ const Sidebar = () => {
                         icon={<LayoutDashboard size={18} />}
                     />
 
-                    <SidebarItem
+                    {/* <SidebarItem
                         href="/dashboard/videos"
                         label="Videos"
                         icon={<Video size={18} />}
-                    />
+                    /> */}
 
                     <SidebarItem
                         href="/dashboard/mentors"

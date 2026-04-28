@@ -9,7 +9,7 @@ export const createBooking = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?._id;
     const { mentorId } = req.params;
-    const { sessionType, startTime, endTime } = req.body;
+    const { sessionType, date, startTime, endTime } = req.body;
 
     const mentor = await Mentor.findById({ _id: mentorId });
 
@@ -21,47 +21,14 @@ export const createBooking = asyncHandler(
       throw new ApiError(400, "Mentor is not available");
     }
 
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    // const end = new Date(start.getTime() + durationInMinutes * 60 * 1000);
-
-    // const minutes = start.getMinutes();
-    // if (minutes !== 0 && minutes !== 30) {
-    //     throw new ApiError(
-    //         400,
-    //         "Start time must start at 00 or 30 minutes",
-    //     );
-    // }
-
-    // const now = new Date();
-
-    // if (start < now) {
-    //     throw new ApiError(400, "Cannot book past time");
-    // }
-
-    // const maxBookingDate = new Date();
-    // maxBookingDate.setDate(maxBookingDate.getDate() + 30);
-
-    // if (start > maxBookingDate) {
-    //     throw new ApiError(400, "Booking allowed only within 30 days");
-    // }
-
-    const date = start.toISOString().slice(0, 10);
-    // console.log(date);
-
     const availability = mentor.availability.find((a) => a.date === date);
 
     if (!availability) {
       throw new ApiError(400, "Mentor not available on this day");
     }
 
-    const requestedStartTime = start.toTimeString().slice(0, 5);
-    const requestedEndTime = end.toTimeString().slice(0, 5);
-
     const isWithinSlot = availability.slots.some(
-      (slot) =>
-        slot.startTime <= requestedStartTime &&
-        slot.endTime >= requestedEndTime,
+      (slot) => slot.startTime <= startTime && slot.endTime >= endTime,
     );
 
     if (!isWithinSlot) {
@@ -75,8 +42,9 @@ export const createBooking = asyncHandler(
 
     const overlappingBooking = await Booking.findOne({
       mentorId,
-      startTime: { $lt: end },
-      endTime: { $gt: start },
+      date,
+      startTime,
+      endTime,
       $or: [
         { status: "confirmed" },
         { status: "pending", expiresAt: { $gt: new Date() } },
@@ -93,8 +61,9 @@ export const createBooking = asyncHandler(
       mentorId,
       userId,
       sessionType,
-      startTime: start,
-      endTime: end,
+      date,
+      startTime,
+      endTime,
       hourlyRate,
       totalPrice,
       status: "pending",
