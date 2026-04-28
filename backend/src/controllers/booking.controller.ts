@@ -66,10 +66,28 @@ export const createBooking = asyncHandler(
       endTime,
       hourlyRate,
       totalPrice,
-      status: "pending",
+      status: "confirmed",
+      // status: "pending",
       expiresAt,
     });
 
     return res.status(201).json(new ApiResponse("Slot reserved", booking));
   },
 );
+
+export const getBookings = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?._id;
+
+  const bookings = await Booking.find({
+    userId: userId,
+    status: "confirmed",
+  }).populate({
+    path: "mentorId",
+    select: "userId",
+    populate: { path: "userId", select: "username fullname" },
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse("Bookings are fetched", bookings));
+});
