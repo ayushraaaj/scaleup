@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const MyBookings = () => {
-  const [bookings, setBookings] = useState();
+  const [bookings, setBookings] = useState<any>([]);
 
   const getBookings = async () => {
     try {
       const res = await api.get("/booking/my-bookings");
+      setBookings(res.data.data);
+      console.log(res.data.data);
     } catch (error) {
       toast.error("Failed to fetch bookings");
     }
@@ -22,11 +24,24 @@ const MyBookings = () => {
     <div>
       <h1>My Bookings</h1>
 
-      <h1>Upcoming</h1>
+      <hr />
 
-      <hr className="mt-10" />
+      {bookings.length > 0 &&
+        bookings.map((b: any) => (
+          <div key={b._id}>
+            <p>
+              Mentor:{" "}
+              {`${b.mentorId.userId.fullname} (@${b.mentorId.userId.username})`}
+            </p>
+            <p>Session Type: {b.sessionType}</p>
+            <p>Total Price: {b.totalPrice}</p>
 
-      <h1 className="mt-10">Past</h1>
+            <p>Date: {b.date}</p>
+            <p>Time: {`${b.startTime} - ${b.endTime}`}</p>
+
+            <hr />
+          </div>
+        ))}
     </div>
   );
 };
