@@ -97,7 +97,7 @@ const MentorDetails = () => {
       setSlots(res.data.data);
     } catch (error: any) {
       console.log(error);
-      toast.error(error.message ?? "Failed to load slots");
+      toast.error(error.response.data.message ?? "Failed to load slots");
     }
   };
 
@@ -355,6 +355,16 @@ const MentorDetails = () => {
               <option value="video">Video Consultation</option>
               <option value="audio">Audio Strategy</option>
             </select>
+
+            <br />
+
+            <input type="checkbox" id="terms" />
+            <label htmlFor="terms">
+              By confirming, you agree that this booking is final and
+              non-refundable.
+            </label>
+
+            <br />
 
             <button onClick={confirmBooking}>Confirm</button>
           </>

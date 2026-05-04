@@ -214,3 +214,60 @@ export const getAvailability = asyncHandler(
       .json(new ApiResponse("Available slots", availableSlots));
   },
 );
+
+export const mentorSessions = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+
+    const mentor = await Mentor.findOne({ userId });
+
+    if (!mentor) {
+      throw new ApiError(404, "Mentor not found");
+    }
+
+    const bookings = await Booking.find({ mentorId: mentor._id }).populate(
+      "userId",
+      "fullname username",
+    );
+
+    if (!bookings) {
+      throw new ApiError(404, "Bookings not found");
+    }
+
+    const now = new Date();
+    // const date = String(new Date().toISOString().split("T")[0]);
+    // const hours = now.getHours();
+    // const minutes = now.getMinutes();
+
+    // const start = `${hours}:${minutes}`;
+
+    // const upcoming = bookings.filter((b) => {
+    //   if (b.date > date) {
+    //     return b;
+    //   } else if (b.date == date && start <= b.startTime) {
+    //     return b;
+    //   }
+    // });
+
+    // const past = bookings.filter((b) => !upcoming.includes(b));
+
+    const { upcoming, past } = bookings.reduce(
+      (acc, b) => {
+        const bookingDateTime = new Date(`${b.date}T${b.startTime}`);
+
+        if (bookingDateTime >= now) {
+          acc.upcoming.push(b);
+        } else {
+          acc.past.push(b);
+        }
+
+        return acc;
+      },
+      { upcoming: [] as typeof bookings, past: [] as typeof bookings },
+    );
+
+    return res
+      .status(200)
+      .json(new ApiResponse("Sessions are fetched", { upcoming, past }));
+  },
+);

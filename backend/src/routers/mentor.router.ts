@@ -5,6 +5,7 @@ import {
   getAllMentors,
   getAvailability,
   getSingleMentor,
+  mentorSessions,
   updateAvailability,
 } from "../controllers/mentor.controller";
 import {
@@ -20,7 +21,10 @@ const router = Router();
 
 router.route("/:username/posts").get(getMentorPosts);
 
+
 router.use(verifyJWT);
+
+router.route("/my-sessions").get(checkIfMentor, mentorSessions);
 
 router
   .route("/profile")

@@ -11,6 +11,7 @@ import {
   PlusSquare,
   PenSquare,
   CalendarDays,
+  CalendarCheck,
 } from "lucide-react";
 import SidebarItem from "./SidebarItem";
 import { getUserRole } from "@/utils/auth";
@@ -61,6 +62,13 @@ const Sidebar = () => {
             icon={<CalendarDays size={18} />}
           />
 
+          {userRole === "mentor" && (
+            <SidebarItem
+              href="/dashboard/my-sessions"
+              label="My Sessions"
+              icon={<CalendarCheck size={18} />}
+            />
+          )}
           <SidebarItem
             href="/dashboard/settings"
             label="Settings"

@@ -87,7 +87,43 @@ export const getBookings = asyncHandler(async (req: Request, res: Response) => {
     populate: { path: "userId", select: "username fullname" },
   });
 
+  if (!bookings) {
+    throw new ApiError(404, "Bookings not found");
+  }
+
+  const now = new Date();
+  // const date = String(now.toISOString().split("T")[0]);
+  // const hours = now.getHours();
+  // const minutes = now.getMinutes();
+
+  // const start = `${hours}:${minutes}`;
+
+  // const upcoming = bookings.filter((b) => {
+  //   if (b.date > date) {
+  //     return true;
+  //   } else if (b.date == date && start <= b.startTime) {
+  //     return true;
+  //   }
+  // });
+
+  // const past = bookings.filter((b) => !upcoming.includes(b));
+
+  const { upcoming, past } = bookings.reduce(
+    (acc, b) => {
+      const bookingDateTime = new Date(`${b.date}T${b.startTime}`);
+
+      if (bookingDateTime >= now) {
+        acc.upcoming.push(b);
+      } else {
+        acc.past.push(b);
+      }
+
+      return acc;
+    },
+    { upcoming: [] as typeof bookings, past: [] as typeof bookings },
+  );
+
   return res
     .status(200)
-    .json(new ApiResponse("Bookings are fetched", bookings));
+    .json(new ApiResponse("Bookings are fetched", { upcoming, past }));
 });
