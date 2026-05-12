@@ -14,7 +14,7 @@ const MyBookings = () => {
       setUpcomingBookings(res.data.data.upcoming);
       setPastBookings(res.data.data.past);
 
-      console.log(res.data.data);
+      // console.log(res.data.data);
     } catch (error) {
       toast.error("Failed to fetch bookings");
     }

@@ -92,21 +92,6 @@ export const getBookings = asyncHandler(async (req: Request, res: Response) => {
   }
 
   const now = new Date();
-  // const date = String(now.toISOString().split("T")[0]);
-  // const hours = now.getHours();
-  // const minutes = now.getMinutes();
-
-  // const start = `${hours}:${minutes}`;
-
-  // const upcoming = bookings.filter((b) => {
-  //   if (b.date > date) {
-  //     return true;
-  //   } else if (b.date == date && start <= b.startTime) {
-  //     return true;
-  //   }
-  // });
-
-  // const past = bookings.filter((b) => !upcoming.includes(b));
 
   const { upcoming, past } = bookings.reduce(
     (acc, b) => {

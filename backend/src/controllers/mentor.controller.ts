@@ -235,21 +235,6 @@ export const mentorSessions = asyncHandler(
     }
 
     const now = new Date();
-    // const date = String(new Date().toISOString().split("T")[0]);
-    // const hours = now.getHours();
-    // const minutes = now.getMinutes();
-
-    // const start = `${hours}:${minutes}`;
-
-    // const upcoming = bookings.filter((b) => {
-    //   if (b.date > date) {
-    //     return b;
-    //   } else if (b.date == date && start <= b.startTime) {
-    //     return b;
-    //   }
-    // });
-
-    // const past = bookings.filter((b) => !upcoming.includes(b));
 
     const { upcoming, past } = bookings.reduce(
       (acc, b) => {
