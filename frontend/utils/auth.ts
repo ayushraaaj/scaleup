@@ -1,18 +1,25 @@
+interface User {
+  _id: string;
+  username: string;
+  fullname: string;
+  role: string;
+}
+
 let accessToken: string | null = null;
-let userRole: string | null = null;
+let user: User | null = null;
 
 export const setAccessToken = (token: string | null) => {
-    accessToken = token;
+  accessToken = token;
 };
 
 export const getAccessToken = () => {
-    return accessToken;
+  return accessToken;
 };
 
-export const setUserRole = (role: string | null) => {
-    userRole = role;
+export const setUser = (u: User | null) => {
+  user = u;
 };
 
-export const getUserRole = () => {
-    return userRole;
+export const getUser = () => {
+  return user;
 };

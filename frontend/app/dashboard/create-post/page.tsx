@@ -1,14 +1,14 @@
 "use client";
 import Editor from "@/components/editor/Editor";
 import { api } from "@/services/axios";
-import { getUserRole } from "@/utils/auth";
+import { getUser } from "@/utils/auth";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { JSONContent } from "@tiptap/react";
 import { Send, ShieldCheck, ArrowUpRight } from "lucide-react";
 
 const CreatePost = () => {
-  const userRole = getUserRole();
+  const user = getUser();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState<JSONContent | null>(null);
 
@@ -28,7 +28,7 @@ const CreatePost = () => {
 
   return (
     <div className="min-h-screen bg-[#fcfcfc]">
-      {userRole === "mentor" ? (
+      {user?.role === "mentor" ? (
         <div className="flex flex-col lg:flex-row max-w-[1440px] mx-auto">
           {/* Main Writing Column */}
           <div className="flex-1 p-4 lg:p-8 border-r border-gray-100 bg-white">

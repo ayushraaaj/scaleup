@@ -1,11 +1,11 @@
 "use client";
 import { api } from "@/services/axios";
-import { getUserRole } from "@/utils/auth";
+import { getUser } from "@/utils/auth";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const MySessions = () => {
-  const userRole = getUserRole();
+  const user = getUser();
 
   const [upcomingSessions, setUpcomingSessions] = useState([]);
   const [pastSessions, setPastSessions] = useState([]);
@@ -27,7 +27,7 @@ const MySessions = () => {
 
   return (
     <div>
-      {userRole === "mentor" ? (
+      {user?.role === "mentor" ? (
         <div>
           <h1>My Sessions</h1>
 

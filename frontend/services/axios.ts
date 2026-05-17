@@ -1,4 +1,4 @@
-import { getAccessToken, setAccessToken, setUserRole } from "@/utils/auth";
+import { getAccessToken, setAccessToken, setUser } from "@/utils/auth";
 import axios from "axios";
 
 export const api = axios.create({
@@ -50,14 +50,14 @@ api.interceptors.response.use(
         const res = await refreshApi.post("/auth/refresh-token");
 
         setAccessToken(res.data.data.accessToken);
-        setUserRole(res.data.data.userRole);
+        setUser(res.data.data.user);
 
         originalRequest.headers.Authorization = `Bearer ${res.data.data.accessToken}`;
 
         return api(originalRequest);
       } catch (error) {
         setAccessToken(null);
-        setUserRole(null);
+        setUser(null);
 
         return Promise.reject(error);
       }

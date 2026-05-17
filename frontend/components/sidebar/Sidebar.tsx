@@ -14,12 +14,12 @@ import {
   CalendarCheck,
 } from "lucide-react";
 import SidebarItem from "./SidebarItem";
-import { getUserRole } from "@/utils/auth";
+import { getUser } from "@/utils/auth";
 
 const Sidebar = () => {
   const pathname = usePathname();
 
-  const userRole = getUserRole();
+  const user = getUser();
 
   return (
     <aside className="w-64 h-screen border-r border-gray-200 bg-[#fcfcfc] flex shrink-0 flex-col justify-between p-6">
@@ -36,7 +36,7 @@ const Sidebar = () => {
 
         {/* Navigation Links */}
         <nav className="space-y-1">
-          {userRole === "mentor" && (
+          {user?.role === "mentor" && (
             <SidebarItem
               href="/dashboard/create-post"
               label="Create Post"
@@ -62,7 +62,7 @@ const Sidebar = () => {
             icon={<CalendarDays size={18} />}
           />
 
-          {userRole === "mentor" && (
+          {user?.role === "mentor" && (
             <SidebarItem
               href="/dashboard/my-sessions"
               label="My Sessions"

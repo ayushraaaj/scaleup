@@ -1,6 +1,6 @@
 "use client";
 import { api } from "@/services/axios";
-import { setAccessToken, setUserRole } from "@/utils/auth";
+import { setAccessToken, setUser } from "@/utils/auth";
 import { useEffect, useState } from "react";
 
 const ClientWrapper = ({ children }: { children: React.ReactNode }) => {
@@ -11,10 +11,10 @@ const ClientWrapper = ({ children }: { children: React.ReactNode }) => {
       const res = await api.post("/auth/refresh-token");
 
       setAccessToken(res.data.data.newAccessToken);
-      setUserRole(res.data.data.userRole);
+      setUser(res.data.data.user);
     } catch (error) {
       setAccessToken(null);
-      setUserRole(null);
+      setUser(null);
     } finally {
       setLoading(false);
     }

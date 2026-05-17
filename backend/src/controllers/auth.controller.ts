@@ -7,6 +7,7 @@ import { generateAccessAndRefreshToken } from "../services/generateToken";
 import { Mentor } from "../models/mentor.model";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { REFRESH_TOKEN_SECRET } from "../config/env";
+import mongoose from "mongoose";
 
 export const signupUser = asyncHandler(async (req: Request, res: Response) => {
   const { fullname, username, email, password } = req.body;
@@ -72,9 +73,12 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     .cookie("refreshToken", refreshToken, options)
     .json(
       new ApiResponse("Login successful", {
-        ...loggedInUser?.toObject(),
         accessToken,
-        userRole: isMentor ? "mentor" : "user",
+        user: {
+          _id: user._id,
+          fullname: user.fullname,
+          role: isMentor ? "mentor" : "user",
+        },
       }),
     );
 });
@@ -150,7 +154,11 @@ export const refreshToken = asyncHandler(
       .json(
         new ApiResponse("Access token refreshed", {
           newAccessToken,
-          userRole: isMentor ? "mentor" : "user",
+          user: {
+            _id: user._id,
+            fullname: user.fullname,
+            role: isMentor ? "mentor" : "user",
+          },
         }),
       );
   },
