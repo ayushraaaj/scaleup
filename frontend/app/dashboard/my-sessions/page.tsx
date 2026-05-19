@@ -38,7 +38,7 @@ const MySessions = () => {
 
           {upcomingSessions.length > 0 ? (
             upcomingSessions.map((s: any) => (
-              <Link key={s._id} href={`/dashboard/my-bookings/${s._id}`}>
+              <Link key={s._id} href={`/dashboard/my-sessions/${s._id}`}>
                 <p>Mentor: {`${s.userId.fullname} (@${s.userId.username})`}</p>
                 <p>Session Type: {s.sessionType}</p>
                 <p>Total Price: {s.totalPrice}</p>

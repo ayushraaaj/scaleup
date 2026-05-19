@@ -28,7 +28,7 @@ export const createMessage = asyncHandler(
       userId.toString() !== booking.userId.toString() &&
       userId.toString() !== mentor.userId.toString()
     ) {
-      throw new ApiError(404, "Cant send message");
+      throw new ApiError(404, "Can't send message");
     }
 
     const message = await Message.create({
@@ -62,10 +62,6 @@ export const showMessages = asyncHandler(
     const messages = await Message.find({ bookingId })
       .sort({ updatedAt: 1 })
       .populate("senderId", "fullname username");
-
-    if (!messages.length) {
-      throw new ApiError(404, "No messages found");
-    }
 
     return res.status(200).json(new ApiResponse("Messages fetched", messages));
   },

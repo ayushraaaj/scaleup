@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const SessionDetails = () => {
-  const { bookingId } = useParams();
+  const { sessionId } = useParams();
 
   const [messages, setMessages] = useState<any>([]);
   const [message, setMessage] = useState("");
@@ -16,7 +16,7 @@ const SessionDetails = () => {
     try {
       setLoading(true);
 
-      const res = await api.get(`/message/show/${bookingId}`);
+      const res = await api.get(`/message/show/${sessionId}`);
 
       setMessages(res.data.data);
     } catch (error: any) {
@@ -30,7 +30,7 @@ const SessionDetails = () => {
     try {
       setLoading(true);
 
-      const res = await api.post(`/message/create/${bookingId}`, {
+      const res = await api.post(`/message/create/${sessionId}`, {
         content: message,
       });
 
@@ -45,7 +45,7 @@ const SessionDetails = () => {
 
   useEffect(() => {
     fetchMessages();
-  }, [bookingId]);
+  }, [sessionId]);
 
   return (
     <div>
@@ -60,7 +60,7 @@ const SessionDetails = () => {
 
       <button onClick={sendMessage}>{loading ? "Sending" : "Send"}</button>
 
-      {messages.length &&
+      {messages.length > 0 &&
         messages.map((m: any) => (
           <div key={m._id}>
             <h1>{m.content}</h1>
