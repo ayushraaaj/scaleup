@@ -1,5 +1,6 @@
 "use client";
 import { api } from "@/services/axios";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -34,7 +35,7 @@ const MyBookings = () => {
 
       {upcomingBookings.length > 0 ? (
         upcomingBookings.map((b: any) => (
-          <div key={b._id}>
+          <Link href={`/dashboard/my-bookings/${b._id}`} key={b._id}>
             <p>
               Mentor:{" "}
               {`${b.mentorId.userId.fullname} (@${b.mentorId.userId.username})`}
@@ -46,7 +47,7 @@ const MyBookings = () => {
             <p>Time: {`${b.startTime} - ${b.endTime}`}</p>
 
             <hr />
-          </div>
+          </Link>
         ))
       ) : (
         <p>There is not any upcoming bookings</p>

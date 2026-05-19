@@ -1,6 +1,7 @@
 "use client";
 import { api } from "@/services/axios";
 import { getUser } from "@/utils/auth";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -37,7 +38,7 @@ const MySessions = () => {
 
           {upcomingSessions.length > 0 ? (
             upcomingSessions.map((s: any) => (
-              <div key={s._id}>
+              <Link key={s._id} href={`/dashboard/my-bookings/${s._id}`}>
                 <p>Mentor: {`${s.userId.fullname} (@${s.userId.username})`}</p>
                 <p>Session Type: {s.sessionType}</p>
                 <p>Total Price: {s.totalPrice}</p>
@@ -46,7 +47,7 @@ const MySessions = () => {
                 <p>Time: {`${s.startTime} - ${s.endTime}`}</p>
 
                 <hr />
-              </div>
+              </Link>
             ))
           ) : (
             <p>There is not any upcoming sessions</p>

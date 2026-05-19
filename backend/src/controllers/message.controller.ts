@@ -59,10 +59,9 @@ export const showMessages = asyncHandler(
       throw new ApiError(404, "Booking not found");
     }
 
-    const messages = await Message.find({ bookingId }).populate(
-      "senderId",
-      "fullname username",
-    );
+    const messages = await Message.find({ bookingId })
+      .sort({ updatedAt: 1 })
+      .populate("senderId", "fullname username");
 
     if (!messages.length) {
       throw new ApiError(404, "No messages found");

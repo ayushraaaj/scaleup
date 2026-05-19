@@ -4,13 +4,7 @@ export const createMessageValidator = () => {
   return [
     param("bookingId").isMongoId().withMessage("Invalid Booking Id"),
 
-    body("content")
-      .trim()
-      .notEmpty()
-      .withMessage("Message is required")
-      .bail()
-      .isLength({ min: 5 })
-      .withMessage("Message must be atleast 5 characters long"),
+    body("content").trim().notEmpty().withMessage("Message is required"),
   ];
 };
 
