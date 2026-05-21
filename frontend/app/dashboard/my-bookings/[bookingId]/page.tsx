@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/services/axios";
+import { socket } from "@/services/socket";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -35,7 +36,8 @@ const BookingDetails = () => {
       });
 
       setMessage("");
-      toast.success("Message sent");
+
+      socket.emit("send-message", res.data.data);
     } catch (error) {
       toast.error("Failed to send message");
     } finally {
@@ -43,9 +45,47 @@ const BookingDetails = () => {
     }
   };
 
+  const connectSocket = () => {
+    socket.connect();
+
+    socket.on("connect", () => {
+      console.log("Connected: ", socket.id);
+    });
+
+    socket.on("disconnect", () => {
+      console.log("Disconnected");
+    });
+  };
+
+  const disconnectSocket = () => {
+    socket.off("connect");
+    socket.off("disconnect");
+    socket.disconnect();
+  };
+
+  const joinRoom = () => {
+    socket.emit("join-room", bookingId);
+  };
+
+  const listenForMessages = () => {
+    socket.on("receive-message", (message) => {
+      setMessages((prev: any) => [...prev, message]);
+    });
+  };
+
   useEffect(() => {
     fetchMessages();
-  }, [bookingId]);
+
+    connectSocket();
+
+    joinRoom();
+
+    listenForMessages();
+
+    return () => {
+      disconnectSocket();
+    };
+  }, []);
 
   return (
     <div>
