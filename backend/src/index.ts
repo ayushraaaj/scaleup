@@ -27,6 +27,10 @@ io.on("connection", (socket) => {
     console.log(`Socket ${socket.id} joined room ${bookingId}`);
   });
 
+  socket.on("typing", ({ bookingId, name }) => {
+    socket.to(bookingId).emit("user-typing", name);
+  });
+
   socket.on("send-message", (message) => {
     const bookingId = message.bookingId;
 

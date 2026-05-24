@@ -1,6 +1,7 @@
 "use client";
 
 import useMessages from "@/hooks/useMessages";
+import { socket } from "@/services/socket";
 import { getUser } from "@/utils/auth";
 import { useParams } from "next/navigation";
 import { useEffect, useRef } from "react";
@@ -26,6 +27,7 @@ const SessionDetails = () => {
     messages,
     details,
     detailsLoading,
+    typing,
   } = useMessages(id, url);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -158,12 +160,25 @@ const SessionDetails = () => {
             <div ref={messagesEndRef} />
           </div>
 
+          {typing && (
+            <p className="text-xs text-gray-400 italic">
+              {typing} is typing...
+            </p>
+          )}
+
           <div className="flex gap-2 items-center border border-gray-300 focus-within:border-black p-2 transition-colors bg-white mt-auto shrink-0">
             <input
               type="text"
               placeholder="Type a message..."
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) => {
+                setMessage(e.target.value);
+
+                socket.emit("typing", {
+                  bookingId: id,
+                  name: getUser()?.fullname,
+                });
+              }}
               className="flex-1 p-2 text-sm outline-none bg-transparent"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !loading && message.trim()) {

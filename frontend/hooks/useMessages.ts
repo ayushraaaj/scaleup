@@ -11,6 +11,8 @@ const useMessages = (id: string, url: string) => {
   const [details, setDetails] = useState<any>(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
 
+  const [typing, setTyping] = useState("");
+
   const fetchDetails = async () => {
     try {
       setDetailsLoading(true);
@@ -88,6 +90,16 @@ const useMessages = (id: string, url: string) => {
     });
   };
 
+  const listenForTyping = () => {
+    socket.on("user-typing", (name) => {
+      setTyping(name);
+
+      setTimeout(() => {
+        setTyping("");
+      }, 2000);
+    });
+  };
+
   useEffect(() => {
     fetchDetails();
 
@@ -98,6 +110,8 @@ const useMessages = (id: string, url: string) => {
     joinRoom();
 
     listenForMessages();
+
+    listenForTyping();
 
     return () => {
       disconnectSocket();
@@ -112,6 +126,7 @@ const useMessages = (id: string, url: string) => {
     messages,
     details,
     detailsLoading,
+    typing,
   };
 };
 
