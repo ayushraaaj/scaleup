@@ -1,51 +1,19 @@
 "use client";
 
-import { api } from "@/services/axios";
+import useMessages from "@/hooks/useMessages";
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
 
 const SessionDetails = () => {
   const { sessionId } = useParams();
 
-  const [messages, setMessages] = useState<any>([]);
-  const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const id = Array.isArray(sessionId) ? sessionId[0] : sessionId;
 
-  const fetchMessages = async () => {
-    try {
-      setLoading(true);
+  if (!id) {
+    return null;
+  }
 
-      const res = await api.get(`/message/show/${sessionId}`);
-
-      setMessages(res.data.data);
-    } catch (error: any) {
-      toast.error(error.response.data.message ?? "Failed to fetch messages");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const sendMessage = async () => {
-    try {
-      setLoading(true);
-
-      const res = await api.post(`/message/create/${sessionId}`, {
-        content: message,
-      });
-
-      setMessage("");
-      toast.success("Message sent");
-    } catch (error) {
-      toast.error("Failed to send message");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMessages();
-  }, [sessionId]);
+  const { message, sendMessage, loading, setMessage, messages } =
+    useMessages(id);
 
   return (
     <div>

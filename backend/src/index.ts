@@ -21,6 +21,12 @@ const io = new Server(server, {
 io.on("connection", (socket) => {
   console.log("Socket connected: ", socket.id);
 
+  socket.on("join-room", (bookingId) => {
+    socket.join(bookingId);
+
+    console.log(`Socket ${socket.id} joined room ${bookingId}`);
+  });
+
   socket.on("send-message", (message) => {
     const bookingId = message.bookingId;
 
