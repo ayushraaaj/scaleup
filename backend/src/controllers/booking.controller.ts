@@ -112,3 +112,27 @@ export const getBookings = asyncHandler(async (req: Request, res: Response) => {
     .status(200)
     .json(new ApiResponse("Bookings are fetched", { upcoming, past }));
 });
+
+export const getDetailedBooking = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+
+    const { bookingId } = req.params;
+
+    const booking = await Booking.findOne({
+      _id: bookingId,
+      userId,
+      status: "confirmed",
+    }).populate({
+      path: "mentorId",
+      select: "userId",
+      populate: { path: "userId", select: "username fullname" },
+    });
+
+    if (!booking) {
+      throw new ApiError(404, `Booking not found`);
+    }
+
+    return res.status(200).json(new ApiResponse("Booking fetched", booking));
+  },
+);

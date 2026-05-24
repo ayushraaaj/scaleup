@@ -231,7 +231,7 @@ export const mentorSessions = asyncHandler(
     );
 
     if (!bookings) {
-      throw new ApiError(404, "Bookings not found");
+      throw new ApiError(404, "Sessions not found");
     }
 
     const now = new Date();
@@ -254,5 +254,30 @@ export const mentorSessions = asyncHandler(
     return res
       .status(200)
       .json(new ApiResponse("Sessions are fetched", { upcoming, past }));
+  },
+);
+
+export const detailedMentorSession = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+
+    const { sessionId } = req.params;
+
+    const mentor = await Mentor.findOne({ userId });
+
+    if (!mentor) {
+      throw new ApiError(404, "Mentor not found");
+    }
+
+    const booking = await Booking.findOne({
+      mentorId: mentor._id,
+      _id: sessionId,
+    }).populate("userId", "username fullname");
+
+    if (!booking) {
+      throw new ApiError(404, "Session not found");
+    }
+
+    return res.status(200).json(new ApiResponse("Session fetched", booking));
   },
 );

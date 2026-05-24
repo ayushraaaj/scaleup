@@ -2,6 +2,7 @@ import { Router } from "express";
 import { checkIfMentor, verifyJWT } from "../middlewares/auth.middleware";
 import {
   createMontorProfile,
+  detailedMentorSession,
   getAllMentors,
   getAvailability,
   getSingleMentor,
@@ -20,7 +21,6 @@ import { getMentorPosts } from "../controllers/post.controller";
 const router = Router();
 
 router.route("/:username/posts").get(getMentorPosts);
-
 
 router.use(verifyJWT);
 
@@ -45,5 +45,7 @@ router.use(checkIfMentor);
 router
   .route("/availability")
   .patch(updateAvailabilityValidator(), validate, updateAvailability);
+
+router.route("/my-sessions/:sessionId").get(detailedMentorSession);
 
 export default router;

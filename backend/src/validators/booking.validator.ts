@@ -11,3 +11,7 @@ export const createBookingValidator = () => {
     body("startTime").notEmpty().withMessage("Start time is required"),
   ];
 };
+
+export const detailedBookingValidator = () => {
+  return [param("bookingId").isMongoId().withMessage("Invalid booking ID")];
+};

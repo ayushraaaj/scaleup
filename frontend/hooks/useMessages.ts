@@ -3,10 +3,28 @@ import { socket } from "@/services/socket";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-const useMessages = (id: string) => {
+const useMessages = (id: string, url: string) => {
   const [messages, setMessages] = useState<any>([]);
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const [details, setDetails] = useState<any>(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+
+  const fetchDetails = async () => {
+    try {
+      setDetailsLoading(true);
+
+      const res = await api.get(`${url}/${id}`);
+
+      setDetails(res.data.data);
+      console.log(res.data.data);
+    } catch (error: any) {
+      toast.error(error.response.data.message ?? "Failed to fetch details");
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
 
   const fetchMessages = async () => {
     try {
@@ -71,6 +89,8 @@ const useMessages = (id: string) => {
   };
 
   useEffect(() => {
+    fetchDetails();
+
     fetchMessages();
 
     connectSocket();
@@ -84,7 +104,15 @@ const useMessages = (id: string) => {
     };
   }, []);
 
-  return { message, sendMessage, loading, setMessage, messages };
+  return {
+    message,
+    sendMessage,
+    loading,
+    setMessage,
+    messages,
+    details,
+    detailsLoading,
+  };
 };
 
 export default useMessages;
