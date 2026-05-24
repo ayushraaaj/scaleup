@@ -1,6 +1,7 @@
 "use client";
 
 import useMessages from "@/hooks/useMessages";
+import { getUser } from "@/utils/auth";
 import { useParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 
@@ -14,6 +15,8 @@ const BookingDetails = () => {
   }
 
   const url = "/booking/my-bookings";
+
+  const clientID = getUser()?._id;
 
   const {
     message,
@@ -114,9 +117,8 @@ const BookingDetails = () => {
               </p>
             ) : (
               messages.map((m: any) => {
-                const clientID = details?.userId?._id || details?.userId;
                 const senderID = m.senderId?._id || m.senderId;
-                const isMyMessage = senderID !== clientID;
+                const isMyMessage = senderID === clientID;
 
                 return (
                   <div
