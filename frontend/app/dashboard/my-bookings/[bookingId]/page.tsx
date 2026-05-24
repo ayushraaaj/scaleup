@@ -126,9 +126,9 @@ const BookingDetails = () => {
                     className={`flex flex-col max-w-[75%] ${isMyMessage ? "ml-auto items-end" : "mr-auto items-start"}`}
                   >
                     <div className="flex items-baseline gap-2 mb-1 px-1">
-                      <span className="text-[11px] font-black uppercase tracking-tight text-black">
+                      {/* <span className="text-[11px] font-black uppercase tracking-tight text-black">
                         {isMyMessage ? "You" : m.senderId.fullname}
-                      </span>
+                      </span> */}
                       <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">
                         {new Date(m.createdAt).toLocaleTimeString([], {
                           hour: "2-digit",
