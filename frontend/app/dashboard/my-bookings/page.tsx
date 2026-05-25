@@ -52,10 +52,10 @@ const MyBookings = () => {
         </h1>
       </header>
 
-      {/* Upcoming Sessions */}
+      {/* Upcoming Bookings */}
       <section className="mb-16">
         <h2 className="text-sm font-black uppercase tracking-widest text-blue-600 border-b border-gray-100 pb-2 mb-6 flex items-center gap-2">
-          <span>●</span> Upcoming Sessions
+          <span>●</span> Upcoming Bookings
         </h2>
 
         {upcomingBookings.length > 0 ? (
@@ -120,10 +120,10 @@ const MyBookings = () => {
         )}
       </section>
 
-      {/* Past Sessions */}
+      {/* Past Bookings */}
       <section>
         <h2 className="text-sm font-black uppercase tracking-widest text-gray-400 border-b border-gray-100 pb-2 mb-6 flex items-center gap-2">
-          <span>○</span> Past Sessions
+          <span>○</span> Past Bookings
         </h2>
 
         {pastBookings.length > 0 ? (

@@ -55,7 +55,7 @@ const MySessions = () => {
           {/* Upcoming Sessions */}
           <section className="mb-16">
             <h2 className="text-sm font-black uppercase tracking-widest text-blue-600 border-b border-gray-100 pb-2 mb-6 flex items-center gap-2">
-              <span>●</span> Upcoming Bookings
+              <span>●</span> Upcoming Sessions
             </h2>
 
             {upcomingSessions.length > 0 ? (
@@ -123,7 +123,7 @@ const MySessions = () => {
           {/* Past Sessions */}
           <section>
             <h2 className="text-sm font-black uppercase tracking-widest text-gray-400 border-b border-gray-100 pb-2 mb-6 flex items-center gap-2">
-              <span>○</span> Historical Log
+              <span>○</span> Past Sessions
             </h2>
 
             {pastSessions.length > 0 ? (

@@ -131,6 +131,13 @@ const BookingDetails = () => {
                       {/* <span className="text-[11px] font-black uppercase tracking-tight text-black">
                         {isMyMessage ? "You" : m.senderId.fullname}
                       </span> */}
+
+                      {/* {isMyMessage && (
+                        <p className="text-[10px] text-gray-400 mt-1">
+                          {m.seen ? "Seen" : m.delivered ? "Delivered" : "Sent"}
+                        </p>
+                      )} */}
+
                       <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest">
                         {new Date(m.createdAt).toLocaleTimeString([], {
                           hour: "2-digit",

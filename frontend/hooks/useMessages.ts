@@ -87,6 +87,8 @@ const useMessages = (id: string, url: string) => {
   const listenForMessages = () => {
     socket.on("receive-message", (message) => {
       setMessages((prev: any) => [...prev, message]);
+
+      socket.emit("message-delivered", { messageId: message._id });
     });
   };
 
@@ -100,6 +102,16 @@ const useMessages = (id: string, url: string) => {
     });
   };
 
+  // const listenForDeliveredMessage = () => {
+  //   socket.on("message-delivered-updated", (updatedMessage) => {
+  //     setMessages((prev: any) =>
+  //       prev.map((m: any) =>
+  //         m._id === updatedMessage._id ? updatedMessage : m,
+  //       ),
+  //     );
+  //   });
+  // };
+
   useEffect(() => {
     fetchDetails();
 
@@ -112,6 +124,8 @@ const useMessages = (id: string, url: string) => {
     listenForMessages();
 
     listenForTyping();
+
+    // listenForDeliveredMessage();
 
     return () => {
       disconnectSocket();
