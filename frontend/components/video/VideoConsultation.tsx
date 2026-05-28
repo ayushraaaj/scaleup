@@ -17,6 +17,11 @@ const VideoConsultaton = (props: any) => {
         {
           urls: "stun:stun.l.google.com:19302",
         },
+        {
+          urls: "turn:openrelay.metered.ca:80",
+          username: "openrelayproject",
+          credential: "openrelayproject",
+        },
       ],
     });
 
@@ -36,6 +41,14 @@ const VideoConsultaton = (props: any) => {
       if (remoteVideoRef.current) {
         remoteVideoRef.current.srcObject = stream;
       }
+    };
+
+    peerConnection.current.onconnectionstatechange = () => {
+      console.log("Connection state:", peerConnection.current?.connectionState);
+    };
+
+    peerConnection.current.oniceconnectionstatechange = () => {
+      console.log("ICE state:", peerConnection.current?.iceConnectionState);
     };
   };
 
@@ -126,7 +139,7 @@ const VideoConsultaton = (props: any) => {
 
     listenForIceCandidate();
 
-    // socket.emit("join-room", id);
+    socket.emit("join-room", id);
     // console.log("ROOM:", id);
 
     return () => {
