@@ -12,13 +12,21 @@ const VideoConsultaton = (props: any) => {
   const remoteStream = useRef(new MediaStream());
 
   const createPeerConnection = () => {
+    if (peerConnection.current) {
+      return;
+    }
+
     peerConnection.current = new RTCPeerConnection({
       iceServers: [
         {
           urls: "stun:stun.l.google.com:19302",
         },
         {
-          urls: "turn:openrelay.metered.ca:80",
+          urls: [
+            "turn:openrelay.metered.ca:80",
+            "turn:openrelay.metered.ca:443",
+            "turn:openrelay.metered.ca:443!transport=tcp",
+          ],
           username: "openrelayproject",
           credential: "openrelayproject",
         },
@@ -27,7 +35,12 @@ const VideoConsultaton = (props: any) => {
 
     peerConnection.current.onicecandidate = (event) => {
       if (event.candidate) {
-        socket.emit("ice-candidate", { id, candidate: event.candidate });
+        console.log("candidate event ", event.candidate);
+
+        socket.emit("ice-candidate", {
+          id,
+          candidate: event.candidate,
+        });
       }
     };
 
@@ -44,11 +57,11 @@ const VideoConsultaton = (props: any) => {
     };
 
     peerConnection.current.onconnectionstatechange = () => {
-      console.log("Connection state:", peerConnection.current?.connectionState);
+      console.log("Connection state:", peerConnection.current!.connectionState);
     };
 
     peerConnection.current.oniceconnectionstatechange = () => {
-      console.log("ICE state:", peerConnection.current?.iceConnectionState);
+      console.log("ICE state:", peerConnection.current!.iceConnectionState);
     };
   };
 
@@ -68,12 +81,12 @@ const VideoConsultaton = (props: any) => {
       createPeerConnection();
 
       stream.getTracks().forEach((track) => {
-        peerConnection.current?.addTrack(track, stream);
+        peerConnection.current!.addTrack(track, stream);
       });
 
-      const offer = await peerConnection.current?.createOffer();
+      const offer = await peerConnection.current!.createOffer();
 
-      await peerConnection.current?.setLocalDescription(offer);
+      await peerConnection.current!.setLocalDescription(offer);
 
       socket.emit("offer", { id, offer });
     } catch (error) {
@@ -101,14 +114,14 @@ const VideoConsultaton = (props: any) => {
       }
 
       stream.getTracks().forEach((track) => {
-        peerConnection.current?.addTrack(track, stream);
+        peerConnection.current!.addTrack(track, stream);
       });
 
-      await peerConnection.current?.setRemoteDescription(offer);
+      await peerConnection.current!.setRemoteDescription(offer);
 
-      const answer = await peerConnection.current?.createAnswer();
+      const answer = await peerConnection.current!.createAnswer();
 
-      await peerConnection.current?.setLocalDescription(answer);
+      await peerConnection.current!.setLocalDescription(answer);
 
       socket.emit("answer", { id, answer });
     });
@@ -120,14 +133,14 @@ const VideoConsultaton = (props: any) => {
 
       console.trace("receive-offer fired");
 
-      await peerConnection.current?.setRemoteDescription(answer);
+      await peerConnection.current!.setRemoteDescription(answer);
     });
   };
 
   const listenForIceCandidate = () => {
     socket.on("receive-ice-candidate", async (candidate) => {
-      if (peerConnection.current?.remoteDescription) {
-        await peerConnection.current?.addIceCandidate(candidate);
+      if (peerConnection.current!.remoteDescription) {
+        await peerConnection.current!.addIceCandidate(candidate);
       }
     });
   };
@@ -170,6 +183,7 @@ const VideoConsultaton = (props: any) => {
         ref={remoteVideoRef}
         autoPlay
         playsInline
+        muted
         className="w-[300px] border"
       />
     </div>
