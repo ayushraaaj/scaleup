@@ -106,7 +106,7 @@ const SessionDetails = () => {
             </div>
           )}
 
-          <VideoConsultaton />
+          <VideoConsultaton id={sessionId} />
         </aside>
 
         {/* Messages Thread */}

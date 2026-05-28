@@ -1,5 +1,6 @@
 "use client";
 
+import VideoConsultaton from "@/components/video/VideoConsultation";
 import useMessages from "@/hooks/useMessages";
 import { socket } from "@/services/socket";
 import { getUser } from "@/utils/auth";
@@ -104,6 +105,8 @@ const BookingDetails = () => {
               </div>
             </div>
           )}
+
+          <VideoConsultaton id={bookingId} />
         </aside>
 
         {/* Messages Thread */}

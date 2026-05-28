@@ -4,7 +4,6 @@ import { CLIENT_URL, PORT } from "./config/env";
 import connectDB from "./db/db";
 import http from "http";
 import { Server } from "socket.io";
-import { Message } from "./models/message.model";
 
 dotenv.config({ path: "./.env" });
 
@@ -38,20 +37,23 @@ io.on("connection", (socket) => {
     io.to(bookingId).emit("receive-message", message);
   });
 
-  // socket.on("message-delivered", async ({ messageId }) => {
-  //   const updatedMessage = await Message.findByIdAndUpdate(
-  //     messageId,
-  //     {
-  //       delivered: true,
-  //     },
-  //     { new: true },
-  //   ).populate("senderId", "fullname username");
-
-  //   io.emit("message-delivered-updated", updatedMessage);
-  // });
-
   socket.on("disconnect", () => {
     console.log("Socket disconnected: ", socket.id);
+  });
+
+  socket.on("offer", ({ id, offer }) => {
+    socket.to(id).emit("receive-offer", offer);
+
+    // console.log("Offer created on backend");
+    // console.log("Forwarding offer to room:", id);
+  });
+
+  socket.on("answer", ({ id, answer }) => {
+    socket.to(id).emit("receive-answer", answer);
+  });
+
+  socket.on("ice-candidate", ({ id, candidate }) => {
+    socket.to(id).emit("receive-ice-candidate", candidate);
   });
 });
 
