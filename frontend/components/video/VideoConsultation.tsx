@@ -8,8 +8,7 @@ const VideoConsultaton = (props: any) => {
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const peerConnection = useRef<RTCPeerConnection | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
-
-  const remoteStream = useRef(new MediaStream());
+  const pendingCandidates = useRef<RTCIceCandidateInit[]>([]);
 
   const createPeerConnection = () => {
     if (peerConnection.current) {
@@ -25,7 +24,7 @@ const VideoConsultaton = (props: any) => {
           urls: [
             "turn:openrelay.metered.ca:80",
             "turn:openrelay.metered.ca:443",
-            "turn:openrelay.metered.ca:443!transport=tcp",
+            "turn:openrelay.metered.ca:443?transport=tcp",
           ],
           username: "openrelayproject",
           credential: "openrelayproject",
@@ -35,7 +34,9 @@ const VideoConsultaton = (props: any) => {
 
     peerConnection.current.onicecandidate = (event) => {
       if (event.candidate) {
-        console.log("candidate event ", event.candidate);
+        // console.log("candidate event ", event.candidate);
+
+        // console.log("candidate event ", event.candidate?.candidate);
 
         socket.emit("ice-candidate", {
           id,
@@ -45,28 +46,58 @@ const VideoConsultaton = (props: any) => {
     };
 
     peerConnection.current.ontrack = (event) => {
-      console.log("Remote track received");
-      console.log("Remote video ref: ", remoteVideoRef.current);
-      console.log(event.streams[0]);
+      // console.log("Remote track received");
+      // console.log("Remote video ref: ", remoteVideoRef.current);
+
+      // console.log(event.streams[0]);
+
+      // const stream1 = event.streams[0];
+
+      // console.log("Video tracks:", stream1.getVideoTracks());
+      // console.log("Audio tracks:", stream1.getAudioTracks());
+      // console.log("Active:", stream1.active);
 
       const [stream] = event.streams;
 
-      if (remoteVideoRef.current) {
+      // const videoTrack = stream.getVideoTracks()[0];
+
+      // const videoTrack = stream.getVideoTracks()[0];
+
+      // videoTrack.onunmute = () => {
+      //   console.log("VIDEO TRACK UNMUTED");
+      // };
+
+      // videoTrack.onmute = () => {
+      //   console.log("VIDEO TRACK MUTED");
+      // };
+
+      // console.log("track muted:", videoTrack?.muted);
+      // console.log("track enabled:", videoTrack?.enabled);
+      // console.log("track readyState:", videoTrack?.readyState);
+
+      if (
+        remoteVideoRef.current &&
+        remoteVideoRef.current.srcObject !== stream
+      ) {
         remoteVideoRef.current.srcObject = stream;
       }
     };
 
-    peerConnection.current.onconnectionstatechange = () => {
-      console.log("Connection state:", peerConnection.current!.connectionState);
-    };
+    // peerConnection.current.onconnectionstatechange = () => {
+    //   console.log("CONNECTION:", peerConnection.current?.connectionState);
+    // };
 
-    peerConnection.current.oniceconnectionstatechange = () => {
-      console.log("ICE state:", peerConnection.current!.iceConnectionState);
-    };
+    // peerConnection.current.oniceconnectionstatechange = () => {
+    //   console.log("ICE:", peerConnection.current?.iceConnectionState);
+    // };
+
+    // peerConnection.current.onicegatheringstatechange = () => {
+    //   console.log("GATHERING:", peerConnection.current?.iceGatheringState);
+    // };
   };
 
   const startLocalVideo = async () => {
-    console.log("Creating offer");
+    // console.log("Creating offer");
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -80,13 +111,30 @@ const VideoConsultaton = (props: any) => {
 
       createPeerConnection();
 
+      // const videoTrack = stream.getVideoTracks()[0];
+
+      // console.log("LOCAL VIDEO TRACK");
+      // console.log("enabled:", videoTrack.enabled);
+      // console.log("readyState:", videoTrack.readyState);
+      // console.log("muted:", videoTrack.muted);
+
       stream.getTracks().forEach((track) => {
-        peerConnection.current!.addTrack(track, stream);
+        // const videoTrack = stream.getVideoTracks()[0];
+
+        // console.log("LOCAL VIDEO TRACK");
+        // console.log("enabled:", videoTrack.enabled);
+        // console.log("readyState:", videoTrack.readyState);
+        // console.log("muted:", videoTrack.muted);
+
+        peerConnection.current?.addTrack(track, stream);
       });
 
-      const offer = await peerConnection.current!.createOffer();
+      const offer = await peerConnection.current?.createOffer();
 
-      await peerConnection.current!.setLocalDescription(offer);
+      // console.log("========== OFFER SDP ==========");
+      // console.log(offer.sdp);
+
+      await peerConnection.current?.setLocalDescription(offer);
 
       socket.emit("offer", { id, offer });
     } catch (error) {
@@ -99,8 +147,8 @@ const VideoConsultaton = (props: any) => {
     // console.log("Offer listener registered");
 
     socket.on("receive-offer", async (offer) => {
-      console.log("Creating answer");
-      console.log("Offer received", offer);
+      // console.log("Creating answer");
+      // console.log("Offer received", offer);
 
       createPeerConnection();
 
@@ -114,14 +162,30 @@ const VideoConsultaton = (props: any) => {
       }
 
       stream.getTracks().forEach((track) => {
-        peerConnection.current!.addTrack(track, stream);
+        peerConnection.current?.addTrack(track, stream);
       });
 
-      await peerConnection.current!.setRemoteDescription(offer);
+      await peerConnection.current?.setRemoteDescription(offer);
 
-      const answer = await peerConnection.current!.createAnswer();
+      // console.log(
+      //   "Remote description set:",
+      //   peerConnection.current!.remoteDescription?.type,
+      // );
 
-      await peerConnection.current!.setLocalDescription(answer);
+      while (pendingCandidates.current.length > 0) {
+        const candidate = pendingCandidates.current.shift();
+
+        if (candidate) {
+          await peerConnection.current?.addIceCandidate(candidate);
+        }
+      }
+
+      const answer = await peerConnection.current?.createAnswer();
+
+      // console.log("========== ANSWER SDP ==========");
+      // console.log(answer.sdp);
+
+      await peerConnection.current?.setLocalDescription(answer);
 
       socket.emit("answer", { id, answer });
     });
@@ -129,18 +193,33 @@ const VideoConsultaton = (props: any) => {
 
   const listenForAnswer = () => {
     socket.on("receive-answer", async (answer) => {
-      console.log("Answer received", answer);
+      // console.log("Answer received", answer);
 
-      console.trace("receive-offer fired");
+      // console.trace("receive-offer fired");
 
-      await peerConnection.current!.setRemoteDescription(answer);
+      await peerConnection.current?.setRemoteDescription(answer);
+
+      // console.log(
+      //   "Remote description set:",
+      //   peerConnection.current!.remoteDescription?.type,
+      // );
+
+      while (pendingCandidates.current.length > 0) {
+        const candidate = pendingCandidates.current.shift();
+
+        if (candidate) {
+          await peerConnection.current?.addIceCandidate(candidate);
+        }
+      }
     });
   };
 
   const listenForIceCandidate = () => {
     socket.on("receive-ice-candidate", async (candidate) => {
-      if (peerConnection.current!.remoteDescription) {
-        await peerConnection.current!.addIceCandidate(candidate);
+      if (peerConnection.current?.remoteDescription) {
+        await peerConnection.current.addIceCandidate(candidate);
+      } else {
+        pendingCandidates.current.push(candidate);
       }
     });
   };
@@ -183,7 +262,6 @@ const VideoConsultaton = (props: any) => {
         ref={remoteVideoRef}
         autoPlay
         playsInline
-        muted
         className="w-[300px] border"
       />
     </div>
