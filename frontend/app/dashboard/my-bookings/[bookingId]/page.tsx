@@ -4,11 +4,13 @@ import VideoConsultaton from "@/components/video/VideoConsultation";
 import useMessages from "@/hooks/useMessages";
 import { socket } from "@/services/socket";
 import { getUser } from "@/utils/auth";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 const BookingDetails = () => {
   const { bookingId } = useParams();
+
+  const router = useRouter();
 
   const id = Array.isArray(bookingId) ? bookingId[0] : bookingId;
 
@@ -106,7 +108,14 @@ const BookingDetails = () => {
             </div>
           )}
 
-          <VideoConsultaton id={bookingId} />
+          {/* <VideoConsultaton id={bookingId} /> */}
+
+          <button
+            onClick={() => router.push(`/call/${id}`)}
+            className="bg-black text-white px-4 py-2"
+          >
+            Join Call
+          </button>
         </aside>
 
         {/* Messages Thread */}

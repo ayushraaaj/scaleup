@@ -4,11 +4,13 @@ import VideoConsultaton from "@/components/video/VideoConsultation";
 import useMessages from "@/hooks/useMessages";
 import { socket } from "@/services/socket";
 import { getUser } from "@/utils/auth";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 const SessionDetails = () => {
   const { sessionId } = useParams();
+
+  const router = useRouter();
 
   const id = Array.isArray(sessionId) ? sessionId[0] : sessionId;
 
@@ -106,7 +108,14 @@ const SessionDetails = () => {
             </div>
           )}
 
-          <VideoConsultaton id={sessionId} />
+          {/* <VideoConsultaton id={sessionId} /> */}
+
+          <button
+            onClick={() => router.push(`/call/${id}`)}
+            className="bg-black text-white px-4 py-2"
+          >
+            Start Call
+          </button>
         </aside>
 
         {/* Messages Thread */}

@@ -1,9 +1,15 @@
 import { socket } from "@/services/socket";
+import { getUser } from "@/utils/auth";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 
 const VideoConsultaton = (props: any) => {
   const { id } = props;
+
+  const router = useRouter();
+
+  const user = getUser();
 
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const peerConnection = useRef<RTCPeerConnection | null>(null);
@@ -250,6 +256,10 @@ const VideoConsultaton = (props: any) => {
     peerConnection.current = null;
 
     pendingCandidates.current = [];
+
+    // setTimeout(() => {
+    //   router.replace(`dashboard/my-sessions`);
+    // }, 5000);
   };
 
   const endCall = () => {
@@ -269,6 +279,10 @@ const VideoConsultaton = (props: any) => {
   };
 
   useEffect(() => {
+    console.log("CALL PAGE MOUNTED");
+
+    socket.connect();
+
     listenForOffer();
 
     listenForAnswer();
@@ -277,10 +291,18 @@ const VideoConsultaton = (props: any) => {
 
     listenForCallEnd();
 
-    socket.emit("join-room", id);
-    // console.log("ROOM:", id);
+    socket.on("connect", () => {
+      console.log("Connected:", socket.id);
+
+      socket.emit("join-room", id);
+
+      if (user?.role === "mentor") {
+        startLocalVideo();
+      }
+    });
 
     return () => {
+      socket.off("connect");
       socket.off("receive-offer");
       socket.off("receive-answer");
       socket.off("receive-ice-candidate");
@@ -289,32 +311,45 @@ const VideoConsultaton = (props: any) => {
   }, []);
 
   return (
-    <div>
-      <button
+    <div className="flex-1 relative">
+      {/* <button
         onClick={startLocalVideo}
         className="bg-black text-white px-4 py-2"
       >
         Start Consultation
-      </button>
+      </button> */}
 
       <video
         ref={localVideoRef}
         autoPlay
         playsInline
         muted
-        className="w-[300px] border"
+        className="
+    absolute
+    bottom-4
+    right-4
+    w-64
+    rounded-lg
+    border
+  "
       />
 
       <video
         ref={remoteVideoRef}
         autoPlay
         playsInline
-        className="w-[300px] border"
+        className="w-full h-[650px] object-cover"
       />
 
-      <button onClick={endCall} className="bg-red-500 text-white px-4 py-2">
-        End Call
-      </button>
+      <div className="h-20 flex justify-center items-center gap-4">
+        <button>Mute</button>
+
+        <button>Camera</button>
+
+        <button onClick={endCall} className="bg-red-500 text-white px-4 py-2">
+          End Call
+        </button>
+      </div>
     </div>
   );
 };
