@@ -46,5 +46,9 @@ export const initializeSocket = (server: any) => {
     socket.on("ice-candidate", ({ id, candidate }) => {
       socket.to(id).emit("receive-ice-candidate", candidate);
     });
+
+    socket.on("end-call", ({ id }) => {
+      socket.to(id).emit("call-ended");
+    });
   });
 };

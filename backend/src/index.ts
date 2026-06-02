@@ -1,9 +1,8 @@
 import dotenv from "dotenv";
 import app from "./app";
-import { CLIENT_URL, PORT } from "./config/env";
+import {  PORT } from "./config/env";
 import connectDB from "./db/db";
 import http from "http";
-import { Server } from "socket.io";
 import { initializeSocket } from "./services/socket";
 
 dotenv.config({ path: "./.env" });

@@ -224,12 +224,58 @@ const VideoConsultaton = (props: any) => {
     });
   };
 
+  const clearConnection = () => {
+    peerConnection.current?.close();
+
+    const localStream = localVideoRef.current?.srcObject as MediaStream;
+
+    localStream?.getTracks().forEach((track) => {
+      track.stop();
+    });
+
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = null;
+    }
+
+    const remoteStream = remoteVideoRef.current?.srcObject as MediaStream;
+
+    remoteStream?.getTracks().forEach((track) => {
+      track.stop();
+    });
+
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = null;
+    }
+
+    peerConnection.current = null;
+
+    pendingCandidates.current = [];
+  };
+
+  const endCall = () => {
+    socket.emit("end-call", { id });
+
+    clearConnection();
+  };
+
+  const listenForCallEnd = () => {
+    socket.on("call-ended", () => {
+      console.log("Remote user ended call");
+
+      clearConnection();
+
+      toast.success("Call ended");
+    });
+  };
+
   useEffect(() => {
     listenForOffer();
 
     listenForAnswer();
 
     listenForIceCandidate();
+
+    listenForCallEnd();
 
     socket.emit("join-room", id);
     // console.log("ROOM:", id);
@@ -238,6 +284,7 @@ const VideoConsultaton = (props: any) => {
       socket.off("receive-offer");
       socket.off("receive-answer");
       socket.off("receive-ice-candidate");
+      socket.off("call-ended");
     };
   }, []);
 
@@ -264,6 +311,10 @@ const VideoConsultaton = (props: any) => {
         playsInline
         className="w-[300px] border"
       />
+
+      <button onClick={endCall} className="bg-red-500 text-white px-4 py-2">
+        End Call
+      </button>
     </div>
   );
 };
