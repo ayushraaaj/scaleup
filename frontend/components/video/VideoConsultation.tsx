@@ -1,7 +1,7 @@
 import { socket } from "@/services/socket";
 import { getUser } from "@/utils/auth";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 const VideoConsultaton = (props: any) => {
@@ -15,6 +15,10 @@ const VideoConsultaton = (props: any) => {
   const peerConnection = useRef<RTCPeerConnection | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const pendingCandidates = useRef<RTCIceCandidateInit[]>([]);
+  const localStreamRef = useRef<MediaStream | null>(null);
+
+  const [isMuted, setIsMuted] = useState(false);
+  const [cameraEnabled, setCameraEnabled] = useState(false);
 
   const createPeerConnection = () => {
     if (peerConnection.current) {
@@ -111,6 +115,8 @@ const VideoConsultaton = (props: any) => {
         audio: true,
       });
 
+      localStreamRef.current = stream;
+
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
@@ -162,6 +168,8 @@ const VideoConsultaton = (props: any) => {
         video: true,
         audio: true,
       });
+
+      localStreamRef.current = stream;
 
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
@@ -266,6 +274,10 @@ const VideoConsultaton = (props: any) => {
     socket.emit("end-call", { id });
 
     clearConnection();
+
+    setTimeout(() => {
+      router.back();
+    }, 1500);
   };
 
   const listenForCallEnd = () => {
@@ -275,7 +287,35 @@ const VideoConsultaton = (props: any) => {
       clearConnection();
 
       toast.success("Call ended");
+
+      setTimeout(() => {
+        router.back();
+      }, 1500);
     });
+  };
+
+  const toggleMute = () => {
+    const audioTrack = localStreamRef.current?.getAudioTracks()[0];
+
+    if (!audioTrack) {
+      return;
+    }
+
+    audioTrack.enabled = !audioTrack.enabled;
+
+    setIsMuted(!audioTrack.enabled);
+  };
+
+  const toggleCamera = () => {
+    const videoTrack = localStreamRef.current?.getVideoTracks()[0];
+
+    if (!videoTrack) {
+      return;
+    }
+
+    videoTrack.enabled = !videoTrack.enabled;
+
+    setCameraEnabled(!videoTrack.enabled);
   };
 
   useEffect(() => {
@@ -342,9 +382,11 @@ const VideoConsultaton = (props: any) => {
       />
 
       <div className="h-20 flex justify-center items-center gap-4">
-        <button>Mute</button>
+        <button onClick={toggleMute}> {isMuted ? "Unmute" : "Mute"} </button>
 
-        <button>Camera</button>
+        <button onClick={toggleCamera}>
+          {cameraEnabled ? "Turn Camera On" : "Turn Camera Off"}
+        </button>
 
         <button onClick={endCall} className="bg-red-500 text-white px-4 py-2">
           End Call
