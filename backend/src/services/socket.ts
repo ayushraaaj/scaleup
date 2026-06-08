@@ -50,5 +50,17 @@ export const initializeSocket = (server: any) => {
     socket.on("end-call", ({ id }) => {
       socket.to(id).emit("call-ended");
     });
+
+    socket.on("call-request", ({ id }) => {
+      socket.to(id).emit("incoming-call");
+    });
+
+    socket.on("user-joined-call", ({ id }) => {
+      socket.to(id).emit("user-joined-call");
+    });
+
+    socket.on("call-declined", ({ id }) => {
+      socket.to(id).emit("call-declined");
+    });
   });
 };

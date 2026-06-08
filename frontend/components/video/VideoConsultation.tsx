@@ -318,6 +318,22 @@ const VideoConsultaton = (props: any) => {
     setCameraEnabled(!videoTrack.enabled);
   };
 
+  const listenForUserJoin = () => {
+    socket.on("user-joined-call", () => {
+      console.log("User joined call");
+
+      startLocalVideo();
+    });
+  };
+
+  const listenForCallDecline = () => {
+    socket.on("call-declined", () => {
+      toast.error("User declined the call");
+
+      router.back();
+    });
+  };
+
   useEffect(() => {
     console.log("CALL PAGE MOUNTED");
 
@@ -331,13 +347,17 @@ const VideoConsultaton = (props: any) => {
 
     listenForCallEnd();
 
+    listenForCallDecline();
+
     socket.on("connect", () => {
       console.log("Connected:", socket.id);
 
       socket.emit("join-room", id);
 
       if (user?.role === "mentor") {
-        startLocalVideo();
+        listenForUserJoin();
+      } else if (user?.role === "user") {
+        socket.emit("user-joined-call", { id });
       }
     });
 
@@ -347,18 +367,13 @@ const VideoConsultaton = (props: any) => {
       socket.off("receive-answer");
       socket.off("receive-ice-candidate");
       socket.off("call-ended");
+      socket.off("user-joined-call");
+      socket.off("call-declined");
     };
   }, []);
 
   return (
     <div className="flex-1 relative">
-      {/* <button
-        onClick={startLocalVideo}
-        className="bg-black text-white px-4 py-2"
-      >
-        Start Consultation
-      </button> */}
-
       <video
         ref={localVideoRef}
         autoPlay

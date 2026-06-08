@@ -1,16 +1,16 @@
 "use client";
 
-import VideoConsultaton from "@/components/video/VideoConsultation";
+import IncomingCall from "@/components/modals/IncomingCall";
 import useMessages from "@/hooks/useMessages";
 import { socket } from "@/services/socket";
 import { getUser } from "@/utils/auth";
-import { useParams, useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 const BookingDetails = () => {
   const { bookingId } = useParams();
 
-  const router = useRouter();
+  const [incomingCall, setIncomingCall] = useState(false);
 
   const id = Array.isArray(bookingId) ? bookingId[0] : bookingId;
 
@@ -21,6 +21,20 @@ const BookingDetails = () => {
   const url = "/booking/my-bookings";
 
   const clientID = getUser()?._id;
+
+  const listenForIncomingCall = () => {
+    socket.on("incoming-call", () => {
+      console.log("Incoming call");
+
+      setIncomingCall(true);
+    });
+  };
+
+  const declineCall = () => {
+    setIncomingCall(false);
+
+    socket.emit("call-declined", { id });
+  };
 
   const {
     message,
@@ -38,6 +52,14 @@ const BookingDetails = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    listenForIncomingCall();
+
+    return () => {
+      socket.off("incoming-call");
+    };
+  }, []);
 
   if (detailsLoading) {
     return (
@@ -108,14 +130,7 @@ const BookingDetails = () => {
             </div>
           )}
 
-          {/* <VideoConsultaton id={bookingId} /> */}
-
-          <button
-            onClick={() => router.push(`/call/${id}`)}
-            className="bg-black text-white px-4 py-2"
-          >
-            Join Call
-          </button>
+          {incomingCall && <IncomingCall id={id} decline={declineCall} />}
         </aside>
 
         {/* Messages Thread */}

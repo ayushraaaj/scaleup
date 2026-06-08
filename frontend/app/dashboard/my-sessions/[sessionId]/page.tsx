@@ -1,11 +1,11 @@
 "use client";
 
-import VideoConsultaton from "@/components/video/VideoConsultation";
 import useMessages from "@/hooks/useMessages";
 import { socket } from "@/services/socket";
 import { getUser } from "@/utils/auth";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
+import toast from "react-hot-toast";
 
 const SessionDetails = () => {
   const { sessionId } = useParams();
@@ -35,9 +35,21 @@ const SessionDetails = () => {
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
+  const startCall = () => {
+    socket.emit("call-request", {
+      id,
+    });
+
+    router.push(`/call/${id}`);
+  };
+
+  
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+
 
   if (detailsLoading) {
     return (
@@ -110,10 +122,7 @@ const SessionDetails = () => {
 
           {/* <VideoConsultaton id={sessionId} /> */}
 
-          <button
-            onClick={() => router.push(`/call/${id}`)}
-            className="bg-black text-white px-4 py-2"
-          >
+          <button onClick={startCall} className="bg-black text-white px-4 py-2">
             Start Call
           </button>
         </aside>
