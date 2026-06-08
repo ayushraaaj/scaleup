@@ -17,7 +17,7 @@ const VideoConsultaton = (props: any) => {
   const pendingCandidates = useRef<RTCIceCandidateInit[]>([]);
   const localStreamRef = useRef<MediaStream | null>(null);
 
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const [cameraEnabled, setCameraEnabled] = useState(false);
 
   const createPeerConnection = () => {
@@ -115,6 +115,16 @@ const VideoConsultaton = (props: any) => {
         audio: true,
       });
 
+      const audioTrack = stream.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = false;
+      }
+
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = false;
+      }
+
       localStreamRef.current = stream;
 
       if (localVideoRef.current) {
@@ -168,6 +178,16 @@ const VideoConsultaton = (props: any) => {
         video: true,
         audio: true,
       });
+
+      const audioTrack = stream.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = false;
+      }
+
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = false;
+      }
 
       localStreamRef.current = stream;
 
@@ -275,9 +295,7 @@ const VideoConsultaton = (props: any) => {
 
     clearConnection();
 
-    setTimeout(() => {
-      router.back();
-    }, 1500);
+    router.back();
   };
 
   const listenForCallEnd = () => {
@@ -288,9 +306,7 @@ const VideoConsultaton = (props: any) => {
 
       toast.success("Call ended");
 
-      setTimeout(() => {
-        router.back();
-      }, 1500);
+      router.back();
     });
   };
 
@@ -400,7 +416,7 @@ const VideoConsultaton = (props: any) => {
         <button onClick={toggleMute}> {isMuted ? "Unmute" : "Mute"} </button>
 
         <button onClick={toggleCamera}>
-          {cameraEnabled ? "Turn Camera On" : "Turn Camera Off"}
+          {cameraEnabled ? "Turn Camera Off" : "Turn Camera On"}
         </button>
 
         <button onClick={endCall} className="bg-red-500 text-white px-4 py-2">
