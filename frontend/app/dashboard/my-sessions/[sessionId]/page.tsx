@@ -198,6 +198,7 @@ const SessionDetails = () => {
                 }
               }}
             />
+
             <button
               onClick={sendMessage}
               disabled={loading || !message.trim()}
