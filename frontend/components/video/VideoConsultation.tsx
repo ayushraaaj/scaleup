@@ -331,7 +331,7 @@ const VideoConsultaton = (props: any) => {
 
     videoTrack.enabled = !videoTrack.enabled;
 
-    setCameraEnabled(!videoTrack.enabled);
+    setCameraEnabled(videoTrack.enabled);
   };
 
   const listenForUserJoin = () => {
