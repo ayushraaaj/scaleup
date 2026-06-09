@@ -16,9 +16,12 @@ const VideoConsultaton = (props: any) => {
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
   const pendingCandidates = useRef<RTCIceCandidateInit[]>([]);
   const localStreamRef = useRef<MediaStream | null>(null);
+  const screenShareRef = useRef<MediaStreamTrack | null>(null);
+  const previousCameraState = useRef(false);
 
   const [isMuted, setIsMuted] = useState(true);
   const [cameraEnabled, setCameraEnabled] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
 
   const createPeerConnection = () => {
     if (peerConnection.current) {
@@ -284,10 +287,6 @@ const VideoConsultaton = (props: any) => {
     peerConnection.current = null;
 
     pendingCandidates.current = [];
-
-    // setTimeout(() => {
-    //   router.replace(`dashboard/my-sessions`);
-    // }, 5000);
   };
 
   const endCall = () => {
@@ -348,6 +347,64 @@ const VideoConsultaton = (props: any) => {
 
       router.back();
     });
+  };
+
+  const restoreCamera = async () => {
+    console.log("SCREEN SHARE ENDED");
+
+    const videoTrack = localStreamRef.current?.getVideoTracks()[0];
+
+    const sender = peerConnection.current
+      ?.getSenders()
+      .find((sender) => sender.track?.kind === "video");
+
+    if (!videoTrack || !sender) {
+      return;
+    }
+
+    await sender?.replaceTrack(videoTrack);
+
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = localStreamRef.current;
+    }
+
+    setCameraEnabled(previousCameraState.current);
+
+    setIsScreenSharing(false);
+  };
+
+  const startScreenShare = async () => {
+    const screenStream = await navigator.mediaDevices.getDisplayMedia({
+      video: true,
+    });
+
+    const screenTrack = screenStream.getVideoTracks()[0];
+
+    screenShareRef.current = screenTrack;
+
+    const sender = peerConnection.current
+      ?.getSenders()
+      .find((sender) => sender.track?.kind === "video");
+
+    const videoTrack = localStreamRef.current?.getVideoTracks()[0];
+
+    previousCameraState.current = videoTrack?.enabled ?? false;
+
+    console.log("Replacing track");
+
+    await sender?.replaceTrack(screenTrack);
+
+    console.log("Track replaced");
+
+    setIsScreenSharing(true);
+
+    screenTrack.onended = restoreCamera;
+  };
+
+  const stopScreenShare = async () => {
+    await restoreCamera();
+
+    screenShareRef.current?.stop();
   };
 
   useEffect(() => {
@@ -417,6 +474,10 @@ const VideoConsultaton = (props: any) => {
 
         <button onClick={toggleCamera}>
           {cameraEnabled ? "Turn Camera Off" : "Turn Camera On"}
+        </button>
+
+        <button onClick={isScreenSharing ? stopScreenShare : startScreenShare}>
+          {isScreenSharing ? "Stop Sharing" : "Share Screen"}
         </button>
 
         <button onClick={endCall} className="bg-red-500 text-white px-4 py-2">
