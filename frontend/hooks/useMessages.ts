@@ -113,7 +113,9 @@ const useMessages = (id: string, url: string) => {
   // };
 
   useEffect(() => {
-    fetchDetails();
+    if (url) {
+      fetchDetails();
+    }
 
     fetchMessages();
 

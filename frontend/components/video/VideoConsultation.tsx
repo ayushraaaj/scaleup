@@ -3,6 +3,7 @@ import { getUser } from "@/utils/auth";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import CallChat from "../chat/CallChat";
 
 const VideoConsultaton = (props: any) => {
   const { id } = props;
@@ -22,6 +23,8 @@ const VideoConsultaton = (props: any) => {
   const [isMuted, setIsMuted] = useState(true);
   const [cameraEnabled, setCameraEnabled] = useState(false);
   const [isScreenSharing, setIsScreenSharing] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState("Connecting...");
 
   const createPeerConnection = () => {
     if (peerConnection.current) {
@@ -96,9 +99,19 @@ const VideoConsultaton = (props: any) => {
       }
     };
 
-    // peerConnection.current.onconnectionstatechange = () => {
-    //   console.log("CONNECTION:", peerConnection.current?.connectionState);
-    // };
+    peerConnection.current.onconnectionstatechange = () => {
+      const state = peerConnection.current?.connectionState;
+
+      console.log("CONNECTION:", state);
+
+      if (state === "connected") {
+        setConnectionStatus("Connected");
+      } else if (state === "connecting") {
+        setConnectionStatus("Connecting...");
+      } else if (state === "disconnected" || state === "failed") {
+        setConnectionStatus("Disconnected");
+      }
+    };
 
     // peerConnection.current.oniceconnectionstatechange = () => {
     //   console.log("ICE:", peerConnection.current?.iceConnectionState);
@@ -446,44 +459,57 @@ const VideoConsultaton = (props: any) => {
   }, []);
 
   return (
-    <div className="flex-1 relative">
-      <video
-        ref={localVideoRef}
-        autoPlay
-        playsInline
-        muted
-        className="
+    <div>
+      <div className="flex-1 relative">
+        <video
+          ref={localVideoRef}
+          autoPlay
+          playsInline
+          muted
+          className="
     absolute
-    bottom-4
-    right-4
+    bottom-20
+    right-0
     w-64
     rounded-lg
     border
   "
-      />
+        />
 
-      <video
-        ref={remoteVideoRef}
-        autoPlay
-        playsInline
-        className="w-full h-[650px] object-cover"
-      />
+        <video
+          ref={remoteVideoRef}
+          autoPlay
+          playsInline
+          className="w-full h-[650px] object-cover"
+        />
 
-      <div className="h-20 flex justify-center items-center gap-4">
-        <button onClick={toggleMute}> {isMuted ? "Unmute" : "Mute"} </button>
+        <div className="absolute top-4 left-4 z-10">
+          <span className="bg-black text-white px-3 py-1 rounded">
+            {connectionStatus}
+          </span>
+        </div>
 
-        <button onClick={toggleCamera}>
-          {cameraEnabled ? "Turn Camera Off" : "Turn Camera On"}
-        </button>
+        <div className="h-20 flex justify-center items-center gap-4">
+          <button onClick={toggleMute}> {isMuted ? "Unmute" : "Mute"} </button>
 
-        <button onClick={isScreenSharing ? stopScreenShare : startScreenShare}>
-          {isScreenSharing ? "Stop Sharing" : "Share Screen"}
-        </button>
+          <button onClick={toggleCamera}>
+            {cameraEnabled ? "Turn Camera Off" : "Turn Camera On"}
+          </button>
 
-        <button onClick={endCall} className="bg-red-500 text-white px-4 py-2">
-          End Call
-        </button>
+          <button
+            onClick={isScreenSharing ? stopScreenShare : startScreenShare}
+          >
+            {isScreenSharing ? "Stop Sharing" : "Share Screen"}
+          </button>
+
+          <button onClick={() => setShowChat(!showChat)}>Chat</button>
+
+          <button onClick={endCall} className="bg-red-500 text-white px-4 py-2">
+            End Call
+          </button>
+        </div>
       </div>
+      {showChat && <CallChat id={id} url="" />}
     </div>
   );
 };
