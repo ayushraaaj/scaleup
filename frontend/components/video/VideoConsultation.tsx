@@ -542,7 +542,7 @@ const VideoConsultaton = (props: any) => {
         {!remoteCameraEnabled && (
           <CameraPlaceholder
             className={"w-full h-[650px] object-cover bg-gray-600"}
-            fullname={remoteUserFullname ? remoteUserFullname : "Dialling..."}
+            fullname={remoteUserFullname ? remoteUserFullname : "Connecting..."}
           />
         )}
 
