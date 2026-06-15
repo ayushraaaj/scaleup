@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import CallChat from "../chat/CallChat";
+import CameraPlaceholder from "./CameraPlaceholder";
 
 const VideoConsultaton = (props: any) => {
   const { id } = props;
@@ -27,6 +28,8 @@ const VideoConsultaton = (props: any) => {
   const [connectionStatus, setConnectionStatus] = useState("Connecting...");
   const [callDuration, setCallDuration] = useState(0);
   const [callStarted, setCallStarted] = useState(false);
+  const [remoteCameraEnabled, setRemoteCameraEnabled] = useState(false);
+  const [remoteUserFullname, setRemoteUserFullname] = useState("");
 
   const createPeerConnection = () => {
     if (peerConnection.current) {
@@ -180,7 +183,7 @@ const VideoConsultaton = (props: any) => {
 
       await peerConnection.current?.setLocalDescription(offer);
 
-      socket.emit("offer", { id, offer });
+      socket.emit("offer", { id, offer, fullname: user?.fullname });
     } catch (error) {
       toast.error("Failed video consultation");
       console.log("Failed video consultation ", error);
@@ -190,7 +193,7 @@ const VideoConsultaton = (props: any) => {
   const listenForOffer = () => {
     // console.log("Offer listener registered");
 
-    socket.on("receive-offer", async (offer) => {
+    socket.on("receive-offer", async ({ offer, fullname }) => {
       // console.log("Creating answer");
       // console.log("Offer received", offer);
 
@@ -244,6 +247,8 @@ const VideoConsultaton = (props: any) => {
       await peerConnection.current?.setLocalDescription(answer);
 
       socket.emit("answer", { id, answer });
+
+      setRemoteUserFullname(fullname);
     });
   };
 
@@ -350,11 +355,18 @@ const VideoConsultaton = (props: any) => {
     videoTrack.enabled = !videoTrack.enabled;
 
     setCameraEnabled(videoTrack.enabled);
+
+    socket.emit("camera-status", {
+      id,
+      enabled: videoTrack.enabled,
+    });
   };
 
   const listenForUserJoin = () => {
-    socket.on("user-joined-call", () => {
+    socket.on("user-joined-call", ({ fullname }) => {
       console.log("User joined call");
+
+      setRemoteUserFullname(fullname);
 
       startLocalVideo();
     });
@@ -434,6 +446,12 @@ const VideoConsultaton = (props: any) => {
     return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
+  const listenForRemoteCameraStatus = () => {
+    socket.on("remote-camera-status", ({ enabled }) => {
+      setRemoteCameraEnabled(enabled);
+    });
+  };
+
   useEffect(() => {
     console.log("CALL PAGE MOUNTED");
 
@@ -449,6 +467,8 @@ const VideoConsultaton = (props: any) => {
 
     listenForCallDecline();
 
+    listenForRemoteCameraStatus();
+
     socket.on("connect", () => {
       console.log("Connected:", socket.id);
 
@@ -457,7 +477,7 @@ const VideoConsultaton = (props: any) => {
       if (user?.role === "mentor") {
         listenForUserJoin();
       } else if (user?.role === "user") {
-        socket.emit("user-joined-call", { id });
+        socket.emit("user-joined-call", { id, fullname: user?.fullname });
       }
     });
 
@@ -469,6 +489,7 @@ const VideoConsultaton = (props: any) => {
       socket.off("call-ended");
       socket.off("user-joined-call");
       socket.off("call-declined");
+      socket.off("remote-camera-status");
     };
   }, []);
 
@@ -492,22 +513,38 @@ const VideoConsultaton = (props: any) => {
           autoPlay
           playsInline
           muted
-          className="
+          className={`
     absolute
     bottom-20
     right-0
     w-64
     rounded-lg
-    border
-  "
+    border ${cameraEnabled ? "block" : "hidden"}
+  `}
         />
+
+        {!cameraEnabled && (
+          <CameraPlaceholder
+            className={
+              "absolute bottom-20 right-0 w-64 h-38 rounded-lg border bg-gray-500"
+            }
+            fullname={user?.fullname}
+          />
+        )}
 
         <video
           ref={remoteVideoRef}
           autoPlay
           playsInline
-          className="w-full h-[650px] object-cover"
+          className={`w-full h-[650px] object-cover ${remoteCameraEnabled ? "block" : "hidden"}`}
         />
+
+        {!remoteCameraEnabled && (
+          <CameraPlaceholder
+            className={"w-full h-[650px] object-cover bg-gray-600"}
+            fullname={remoteUserFullname ? remoteUserFullname : "Dialling..."}
+          />
+        )}
 
         <div className="absolute top-4 left-4 z-10">
           <span className="bg-black text-white px-3 py-1 rounded">

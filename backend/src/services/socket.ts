@@ -32,8 +32,8 @@ export const initializeSocket = (server: any) => {
       console.log("Socket disconnected: ", socket.id);
     });
 
-    socket.on("offer", ({ id, offer }) => {
-      socket.to(id).emit("receive-offer", offer);
+    socket.on("offer", ({ id, offer, fullname }) => {
+      socket.to(id).emit("receive-offer", { offer, fullname });
 
       // console.log("Offer created on backend");
       // console.log("Forwarding offer to room:", id);
@@ -55,12 +55,16 @@ export const initializeSocket = (server: any) => {
       socket.to(id).emit("incoming-call");
     });
 
-    socket.on("user-joined-call", ({ id }) => {
-      socket.to(id).emit("user-joined-call");
+    socket.on("user-joined-call", ({ id, fullname }) => {
+      socket.to(id).emit("user-joined-call", { fullname });
     });
 
     socket.on("call-declined", ({ id }) => {
       socket.to(id).emit("call-declined");
+    });
+
+    socket.on("camera-status", ({ id, enabled, fullname }) => {
+      socket.to(id).emit("remote-camera-status", { enabled, fullname });
     });
   });
 };
