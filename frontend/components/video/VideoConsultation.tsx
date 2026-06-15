@@ -25,6 +25,8 @@ const VideoConsultaton = (props: any) => {
   const [isScreenSharing, setIsScreenSharing] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState("Connecting...");
+  const [callDuration, setCallDuration] = useState(0);
+  const [callStarted, setCallStarted] = useState(false);
 
   const createPeerConnection = () => {
     if (peerConnection.current) {
@@ -106,6 +108,10 @@ const VideoConsultaton = (props: any) => {
 
       if (state === "connected") {
         setConnectionStatus("Connected");
+
+        if (!callStarted) {
+          setCallStarted(true);
+        }
       } else if (state === "connecting") {
         setConnectionStatus("Connecting...");
       } else if (state === "disconnected" || state === "failed") {
@@ -420,6 +426,14 @@ const VideoConsultaton = (props: any) => {
     screenShareRef.current?.stop();
   };
 
+  const formatDuration = (seconds: number) => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+
+    return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
+  };
+
   useEffect(() => {
     console.log("CALL PAGE MOUNTED");
 
@@ -458,6 +472,18 @@ const VideoConsultaton = (props: any) => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!callStarted) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setCallDuration((prev) => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [callStarted]);
+
   return (
     <div>
       <div className="flex-1 relative">
@@ -487,6 +513,10 @@ const VideoConsultaton = (props: any) => {
           <span className="bg-black text-white px-3 py-1 rounded">
             {connectionStatus}
           </span>
+        </div>
+
+        <div className="absolute top-4 right-4 bg-black text-white px-3 py-1 rounded">
+          {formatDuration(callDuration)}
         </div>
 
         <div className="h-20 flex justify-center items-center gap-4">
