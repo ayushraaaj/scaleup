@@ -47,8 +47,8 @@ export const initializeSocket = (server: any) => {
       socket.to(id).emit("receive-ice-candidate", candidate);
     });
 
-    socket.on("end-call", ({ id }) => {
-      socket.to(id).emit("call-ended");
+    socket.on("end-call", ({ id, fullname }) => {
+      socket.to(id).emit("call-ended", { fullname });
     });
 
     socket.on("call-request", ({ id }) => {
@@ -59,8 +59,8 @@ export const initializeSocket = (server: any) => {
       socket.to(id).emit("user-joined-call", { fullname });
     });
 
-    socket.on("call-declined", ({ id }) => {
-      socket.to(id).emit("call-declined");
+    socket.on("call-declined", ({ id, fullname }) => {
+      socket.to(id).emit("call-declined", { fullname });
     });
 
     socket.on("camera-status", ({ id, enabled }) => {
@@ -75,6 +75,10 @@ export const initializeSocket = (server: any) => {
       socket.to(id).emit("remote-screen-share-status", {
         enabled,
       });
+    });
+
+    socket.on("rejoin-call", ({ id, fullname }) => {
+      socket.to(id).emit("participant-rejoined", { fullname });
     });
   });
 };

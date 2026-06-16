@@ -13,6 +13,8 @@ const BookingDetails = () => {
 
   const [incomingCall, setIncomingCall] = useState(false);
 
+  const user = getUser();
+
   const id = Array.isArray(bookingId) ? bookingId[0] : bookingId;
 
   if (!id) {
@@ -32,7 +34,7 @@ const BookingDetails = () => {
   const declineCall = () => {
     setIncomingCall(false);
 
-    socket.emit("call-declined", { id });
+    socket.emit("call-declined", { id, fullname: user?.fullname });
   };
 
   const { details } = useMessages(id, url);

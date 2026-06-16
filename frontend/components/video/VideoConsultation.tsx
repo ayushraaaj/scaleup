@@ -316,7 +316,7 @@ const VideoConsultaton = (props: any) => {
   };
 
   const endCall = () => {
-    socket.emit("end-call", { id });
+    socket.emit("end-call", { id, fullname: user?.fullname });
 
     clearConnection();
 
@@ -324,12 +324,12 @@ const VideoConsultaton = (props: any) => {
   };
 
   const listenForCallEnd = () => {
-    socket.on("call-ended", () => {
+    socket.on("call-ended", ({ fullname }) => {
       console.log("Remote user ended call");
 
       clearConnection();
 
-      toast.success("Call ended");
+      toast.success(`${fullname} left the call`);
 
       router.back();
     });
@@ -380,8 +380,8 @@ const VideoConsultaton = (props: any) => {
   };
 
   const listenForCallDecline = () => {
-    socket.on("call-declined", () => {
-      toast.error("User declined the call");
+    socket.on("call-declined", ({ fullname }) => {
+      toast.error(`${fullname} declined the call`);
 
       router.back();
     });
@@ -528,6 +528,7 @@ const VideoConsultaton = (props: any) => {
       socket.off("call-declined");
       socket.off("remote-camera-status");
       socket.off("remote-mic-status");
+      socket.off("remote-screen-share-status");
     };
   }, []);
 
@@ -590,6 +591,13 @@ const VideoConsultaton = (props: any) => {
           </span>{" "}
           {!remoteMicEnabled && (
             <span className="bg-black text-white px-3 py-1 rounded">Muted</span>
+          )}
+          {(remoteScreenSharing || isScreenSharing) && (
+            <span className="bg-blue-600 text-white px-3 py-1 rounded ml-2">
+              {isScreenSharing
+                ? "You are presenting"
+                : `${remoteUserFullname} is presenting`}
+            </span>
           )}
         </div>
 
