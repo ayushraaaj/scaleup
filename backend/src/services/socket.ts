@@ -71,8 +71,10 @@ export const initializeSocket = (server: any) => {
       socket.to(id).emit("remote-mic-status", { enabled });
     });
 
-    // socket.on("screen-shaare-status", ({ id, enabled }) => {
-    //   socket.to(id).emit("screen-share-status", { enabled });
-    // });
+    socket.on("screen-share-status", ({ id, enabled }) => {
+      socket.to(id).emit("remote-screen-share-status", {
+        enabled,
+      });
+    });
   });
 };

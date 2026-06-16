@@ -31,6 +31,7 @@ const VideoConsultaton = (props: any) => {
   const [remoteCameraEnabled, setRemoteCameraEnabled] = useState(false);
   const [remoteUserFullname, setRemoteUserFullname] = useState("");
   const [remoteMicEnabled, setRemoteMicEnabled] = useState(false);
+  const [remoteScreenSharing, setRemoteScreenSharing] = useState(false);
 
   const createPeerConnection = () => {
     if (peerConnection.current) {
@@ -408,12 +409,21 @@ const VideoConsultaton = (props: any) => {
     setCameraEnabled(previousCameraState.current);
 
     setIsScreenSharing(false);
+
+    socket.emit("screen-share-status", {
+      id,
+      enabled: false,
+    });
   };
 
   const startScreenShare = async () => {
     const screenStream = await navigator.mediaDevices.getDisplayMedia({
       video: true,
     });
+
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = screenStream;
+    }
 
     const screenTrack = screenStream.getVideoTracks()[0];
 
@@ -434,6 +444,11 @@ const VideoConsultaton = (props: any) => {
     // console.log("Track replaced");
 
     setIsScreenSharing(true);
+
+    socket.emit("screen-share-status", {
+      id,
+      enabled: true,
+    });
 
     screenTrack.onended = restoreCamera;
   };
@@ -464,6 +479,12 @@ const VideoConsultaton = (props: any) => {
     });
   };
 
+  const listenForRemoteScreenShareStatus = () => {
+    socket.on("remote-screen-share-status", ({ enabled }) => {
+      setRemoteScreenSharing(enabled);
+    });
+  };
+
   useEffect(() => {
     console.log("CALL PAGE MOUNTED");
 
@@ -482,6 +503,8 @@ const VideoConsultaton = (props: any) => {
     listenForRemoteCameraStatus();
 
     listenForRemoteMicStatus();
+
+    listenForRemoteScreenShareStatus();
 
     socket.on("connect", () => {
       console.log("Connected:", socket.id);
@@ -534,11 +557,11 @@ const VideoConsultaton = (props: any) => {
     right-0
     w-64
     rounded-lg
-    border ${cameraEnabled ? "block" : "hidden"}
+    border ${cameraEnabled || isScreenSharing ? "block" : "hidden"}
   `}
         />
 
-        {!cameraEnabled && (
+        {!cameraEnabled && !isScreenSharing && (
           <CameraPlaceholder
             className={
               "absolute bottom-20 right-0 w-64 h-38 rounded-lg border bg-gray-500"
@@ -551,10 +574,10 @@ const VideoConsultaton = (props: any) => {
           ref={remoteVideoRef}
           autoPlay
           playsInline
-          className={`w-full h-[650px] object-cover ${remoteCameraEnabled ? "block" : "hidden"}`}
+          className={`w-full h-[650px] object-cover ${remoteCameraEnabled || remoteScreenSharing ? "block" : "hidden"}`}
         />
 
-        {!remoteCameraEnabled && (
+        {!remoteCameraEnabled && !remoteScreenSharing && (
           <CameraPlaceholder
             className={"w-full h-[650px] object-cover bg-gray-600"}
             fullname={remoteUserFullname ? remoteUserFullname : "Connecting..."}
