@@ -63,8 +63,16 @@ export const initializeSocket = (server: any) => {
       socket.to(id).emit("call-declined");
     });
 
-    socket.on("camera-status", ({ id, enabled, fullname }) => {
-      socket.to(id).emit("remote-camera-status", { enabled, fullname });
+    socket.on("camera-status", ({ id, enabled }) => {
+      socket.to(id).emit("remote-camera-status", { enabled });
     });
+
+    socket.on("mic-status", ({ id, enabled }) => {
+      socket.to(id).emit("remote-mic-status", { enabled });
+    });
+
+    // socket.on("screen-shaare-status", ({ id, enabled }) => {
+    //   socket.to(id).emit("screen-share-status", { enabled });
+    // });
   });
 };

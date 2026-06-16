@@ -30,6 +30,7 @@ const VideoConsultaton = (props: any) => {
   const [callStarted, setCallStarted] = useState(false);
   const [remoteCameraEnabled, setRemoteCameraEnabled] = useState(false);
   const [remoteUserFullname, setRemoteUserFullname] = useState("");
+  const [remoteMicEnabled, setRemoteMicEnabled] = useState(false);
 
   const createPeerConnection = () => {
     if (peerConnection.current) {
@@ -343,6 +344,11 @@ const VideoConsultaton = (props: any) => {
     audioTrack.enabled = !audioTrack.enabled;
 
     setIsMuted(!audioTrack.enabled);
+
+    socket.emit("mic-status", {
+      id,
+      enabled: audioTrack.enabled,
+    });
   };
 
   const toggleCamera = () => {
@@ -421,11 +427,11 @@ const VideoConsultaton = (props: any) => {
 
     previousCameraState.current = videoTrack?.enabled ?? false;
 
-    console.log("Replacing track");
+    // console.log("Replacing track");
 
     await sender?.replaceTrack(screenTrack);
 
-    console.log("Track replaced");
+    // console.log("Track replaced");
 
     setIsScreenSharing(true);
 
@@ -452,6 +458,12 @@ const VideoConsultaton = (props: any) => {
     });
   };
 
+  const listenForRemoteMicStatus = () => {
+    socket.on("remote-mic-status", ({ enabled }) => {
+      setRemoteMicEnabled(enabled);
+    });
+  };
+
   useEffect(() => {
     console.log("CALL PAGE MOUNTED");
 
@@ -468,6 +480,8 @@ const VideoConsultaton = (props: any) => {
     listenForCallDecline();
 
     listenForRemoteCameraStatus();
+
+    listenForRemoteMicStatus();
 
     socket.on("connect", () => {
       console.log("Connected:", socket.id);
@@ -490,6 +504,7 @@ const VideoConsultaton = (props: any) => {
       socket.off("user-joined-call");
       socket.off("call-declined");
       socket.off("remote-camera-status");
+      socket.off("remote-mic-status");
     };
   }, []);
 
@@ -549,7 +564,10 @@ const VideoConsultaton = (props: any) => {
         <div className="absolute top-4 left-4 z-10">
           <span className="bg-black text-white px-3 py-1 rounded">
             {connectionStatus}
-          </span>
+          </span>{" "}
+          {!remoteMicEnabled && (
+            <span className="bg-black text-white px-3 py-1 rounded">Muted</span>
+          )}
         </div>
 
         <div className="absolute top-4 right-4 bg-black text-white px-3 py-1 rounded">
