@@ -5,6 +5,7 @@ import { ApiError } from "../utils/ApiError";
 import { Mentor } from "../models/mentor.model";
 import { Message } from "../models/message.model";
 import { ApiResponse } from "../utils/ApiResponse";
+import { uploadOnCloudinary } from "../utils/uploadOnCloudinary";
 
 export const createMessage = asyncHandler(
   async (req: Request, res: Response) => {
@@ -66,3 +67,25 @@ export const showMessages = asyncHandler(
     return res.status(200).json(new ApiResponse("Messages fetched", messages));
   },
 );
+
+export const uploadFile = asyncHandler(async (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      return;
+    }
+
+    console.log(req.file);
+
+    const uploadedFile = await uploadOnCloudinary(req.file.path);
+
+    return res.status(200).json(
+      new ApiResponse("Uploaded", {
+        fileUrl: uploadedFile.secure_url,
+        fileName: req.file.originalname,
+        fileType: req.file.mimetype,
+      }),
+    );
+  } catch {
+    throw new ApiError(500, "File upload failed");
+  }
+});
