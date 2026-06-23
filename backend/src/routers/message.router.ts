@@ -1,9 +1,5 @@
 import { Router } from "express";
-import {
-  createMessage,
-  showMessages,
-  uploadFile,
-} from "../controllers/message.controller";
+import { createMessage, showMessages } from "../controllers/message.controller";
 import { verifyJWT } from "../middlewares/auth.middleware";
 import {
   createMessageValidator,
@@ -18,12 +14,15 @@ router.use(verifyJWT);
 
 router
   .route("/create/:bookingId")
-  .post(createMessageValidator(), validate, createMessage);
+  .post(
+    upload.single("file"),
+    createMessageValidator(),
+    validate,
+    createMessage,
+  );
 
 router
   .route("/show/:bookingId")
   .get(showMessagesValidator(), validate, showMessages);
-
-router.route("/upload").post(upload.single("file"), uploadFile);
 
 export default router;

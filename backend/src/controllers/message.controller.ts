@@ -2,10 +2,10 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { Booking } from "../models/booking.model";
 import { ApiError } from "../utils/ApiError";
-import { Mentor } from "../models/mentor.model";
 import { Message } from "../models/message.model";
 import { ApiResponse } from "../utils/ApiResponse";
 import { uploadOnCloudinary } from "../utils/uploadOnCloudinary";
+import fs from "fs";
 
 export const createMessage = asyncHandler(
   async (req: Request, res: Response) => {
@@ -32,15 +32,38 @@ export const createMessage = asyncHandler(
       throw new ApiError(404, "Can't send message");
     }
 
+    let fileUrl = "",
+      fileName = "",
+      fileType = "";
+
+    if (req.file) {
+      console.log(req.file);
+
+      let uploadedFile;
+
+      try {
+        uploadedFile = await uploadOnCloudinary(req.file.path);
+
+        // console.log(uploadedFile);
+      } finally {
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
+      }
+
+      fileUrl = uploadedFile.secure_url;
+      fileName = req.file.originalname;
+      fileType = req.file.mimetype;
+    }
+
     const message = await Message.create({
       bookingId,
       senderId: userId,
       content,
+      fileUrl,
+      fileName,
+      fileType,
     });
-
-    if (!message) {
-      throw new ApiError(400, "Something went wrong while sending message");
-    }
 
     return res
       .status(201)
@@ -67,25 +90,3 @@ export const showMessages = asyncHandler(
     return res.status(200).json(new ApiResponse("Messages fetched", messages));
   },
 );
-
-export const uploadFile = asyncHandler(async (req: Request, res: Response) => {
-  try {
-    if (!req.file) {
-      return;
-    }
-
-    console.log(req.file);
-
-    const uploadedFile = await uploadOnCloudinary(req.file.path);
-
-    return res.status(200).json(
-      new ApiResponse("Uploaded", {
-        fileUrl: uploadedFile.secure_url,
-        fileName: req.file.originalname,
-        fileType: req.file.mimetype,
-      }),
-    );
-  } catch {
-    throw new ApiError(500, "File upload failed");
-  }
-});
