@@ -1,7 +1,8 @@
 import useMessages from "@/hooks/useMessages";
 import { socket } from "@/services/socket";
 import { getUser } from "@/utils/auth";
-import { useEffect, useRef } from "react";
+import { Paperclip } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 const CallChat = (props: any) => {
   const { id, url } = props;
@@ -16,6 +17,8 @@ const CallChat = (props: any) => {
     messages,
     detailsLoading,
     typing,
+    setFile,
+    file,
   } = useMessages(id, url);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -48,8 +51,8 @@ const CallChat = (props: any) => {
             const senderID = m.senderId?._id || m.senderId;
             const isMyMessage = senderID === clientID;
 
-            console.log("CLIENT:", clientID);
-            console.log("SENDER:", senderID);
+            // console.log("CLIENT:", clientID);
+            // console.log("SENDER:", senderID);
 
             return (
               <div
@@ -110,6 +113,25 @@ const CallChat = (props: any) => {
             }
           }}
         />
+
+        {file && <p className="text-xs text-gray-500">{file.name}</p>}
+
+        <input
+          type="file"
+          id="file-input"
+          className="hidden"
+          onChange={(e) => {
+            setFile(e.target.files?.[0] || null);
+          }}
+        />
+
+        <label
+          title="Attach file"
+          htmlFor="file-input"
+          className="cursor-pointer px-3 py-2 border"
+        >
+          <Paperclip size={20} />
+        </label>
 
         <button
           onClick={sendMessage}

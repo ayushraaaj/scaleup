@@ -12,6 +12,7 @@ const useMessages = (id: string, url: string) => {
   const [detailsLoading, setDetailsLoading] = useState(false);
 
   const [typing, setTyping] = useState("");
+  const [file, setFile] = useState<File | null>(null);
 
   const fetchDetails = async () => {
     try {
@@ -46,9 +47,15 @@ const useMessages = (id: string, url: string) => {
     try {
       setLoading(true);
 
-      const res = await api.post(`/message/create/${id}`, {
-        content: message,
-      });
+      const formData = new FormData();
+
+      formData.append("content", message);
+
+      if (file) {
+        formData.append("file", file);
+      }
+
+      const res = await api.post(`/message/create/${id}`, formData);
 
       setMessage("");
 
@@ -143,6 +150,8 @@ const useMessages = (id: string, url: string) => {
     details,
     detailsLoading,
     typing,
+    setFile,
+    file,
   };
 };
 
