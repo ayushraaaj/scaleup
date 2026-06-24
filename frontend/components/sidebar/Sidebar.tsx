@@ -21,6 +21,8 @@ const Sidebar = () => {
 
   const user = getUser();
 
+  // console.log("User ", user);
+
   return (
     <aside className="w-64 h-screen border-r border-gray-200 bg-[#fcfcfc] flex shrink-0 flex-col justify-between p-6">
       <div>
@@ -41,7 +43,7 @@ const Sidebar = () => {
               href="/dashboard/create-post"
               label="Create Post"
               icon={<PenSquare size={18} />}
-            ></SidebarItem>
+            />
           )}
 
           <SidebarItem

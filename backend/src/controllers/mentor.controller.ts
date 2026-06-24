@@ -27,9 +27,7 @@ export const createMontorProfile = asyncHandler(
 
     return res
       .status(201)
-      .json(
-        new ApiResponse("Mentor profile created successfully", mentorProfile),
-      );
+      .json(new ApiResponse("Mentor profile created", mentorProfile));
   },
 );
 

@@ -83,7 +83,6 @@ const CallChat = (props: any) => {
                     <Link
                       href={m.fileUrl}
                       target="_blank"
-                      rel="noreferrer"
                       className="text-blue-500 underline"
                     >
                       {m.fileName}
