@@ -2,6 +2,7 @@ import useMessages from "@/hooks/useMessages";
 import { socket } from "@/services/socket";
 import { getUser } from "@/utils/auth";
 import { Paperclip } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 const CallChat = (props: any) => {
@@ -78,6 +79,16 @@ const CallChat = (props: any) => {
                       : "bg-[#fcfcfc] text-gray-800 border-gray-200"
                   }`}
                 >
+                  {m.fileUrl && (
+                    <Link
+                      href={m.fileUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-blue-500 underline"
+                    >
+                      {m.fileName}
+                    </Link>
+                  )}
                   <p>{m.content}</p>
                 </div>
               </div>
