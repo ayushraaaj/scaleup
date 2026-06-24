@@ -47,7 +47,7 @@ const BecomeMentor = () => {
       setAccessToken(refreshRes.data.data.newAccessToken);
       setUser(refreshRes.data.data.user);
 
-      router.push("/dashboard/feed");
+      router.push("/dashboard/create-post");
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Something went wrong");
     }

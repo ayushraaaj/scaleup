@@ -1,15 +1,24 @@
+"use client";
 import { getUser } from "@/utils/auth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const Settings = () => {
-  const user = getUser();
+  let user = getUser();
 
   console.log("User ", user);
+
+  const router = useRouter();
 
   return (
     <div>
       <h1>Settings</h1>
 
-      {user?.role === "mentor" && <button>Become a Mentor</button>}
+      {user?.role === "user" && (
+        <button onClick={() => router.push("/dashboard/become-mentor")}>
+          Become a Mentor
+        </button>
+      )}
     </div>
   );
 };
