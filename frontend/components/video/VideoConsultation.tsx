@@ -1,6 +1,6 @@
 import { socket } from "@/services/socket";
 import { getUser } from "@/utils/auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import CallChat from "../chat/CallChat";
@@ -12,6 +12,10 @@ const VideoConsultaton = (props: any) => {
   const router = useRouter();
 
   const user = getUser();
+
+  const searchParams = useSearchParams();
+
+  const isCaller = searchParams.get("caller") === "true";
 
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const peerConnection = useRef<RTCPeerConnection | null>(null);
@@ -511,9 +515,9 @@ const VideoConsultaton = (props: any) => {
 
       socket.emit("join-room", id);
 
-      if (user?.role === "mentor") {
+      if (isCaller) {
         listenForUserJoin();
-      } else if (user?.role === "user") {
+      } else {
         socket.emit("user-joined-call", { id, fullname: user?.fullname });
       }
     });
