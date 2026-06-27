@@ -78,6 +78,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
           _id: user._id,
           fullname: user.fullname,
           role: isMentor ? "mentor" : "user",
+          username: user.username,
         },
       }),
     );
@@ -158,6 +159,7 @@ export const refreshToken = asyncHandler(
             _id: user._id,
             fullname: user.fullname,
             role: isMentor ? "mentor" : "user",
+            username: user.username,
           },
         }),
       );

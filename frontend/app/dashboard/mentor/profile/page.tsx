@@ -2,10 +2,10 @@
 import { api } from "@/services/axios";
 import { getUser, setAccessToken, setUser } from "@/utils/auth";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
-const BecomeMentor = () => {
+const MentorProfile = () => {
   const [bio, setBio] = useState("");
   const [expertise, setExpertise] = useState("");
   const [expertiseList, setExpertiseList] = useState<string[]>([]);
@@ -17,6 +17,28 @@ const BecomeMentor = () => {
   const router = useRouter();
 
   const user = getUser();
+  console.log(user);
+
+  const fetchOldDetails = async () => {
+    if (!user) {
+      return;
+    }
+
+    try {
+      const res1 = await api.get(`/mentor/${user?.username}`);
+
+      const res = res1.data.data;
+
+      setBio(res.bio);
+      setExpertiseList(res.expertise);
+      setAudioPrice(res.pricing.audio);
+      setVideoPrice(res.pricing.video);
+      setAudioEnabled(res.consultationTypes.audio);
+      setVideoEnabled(res.consultationTypes.video);
+    } catch (error) {
+      toast.error("Something went wrong");
+    }
+  };
 
   const addExpertise = () => {
     if (!expertise.trim()) {
@@ -52,16 +74,11 @@ const BecomeMentor = () => {
       console.log("Audio: ", audioEnabled);
       console.log("Video: ", videoEnabled);
 
-      const res = await api.post("/mentor/profile", payload);
+      const res = await api.patch("/mentor/profile", payload);
 
       console.log(res.data);
 
       toast.success(res.data.message);
-
-      const refreshRes = await api.post("/auth/refresh-token");
-
-      setAccessToken(refreshRes.data.data.newAccessToken);
-      setUser(refreshRes.data.data.user);
 
       router.push(`/dashboard/mentors/${user?.username}`);
     } catch (error: any) {
@@ -69,9 +86,13 @@ const BecomeMentor = () => {
     }
   };
 
+  useEffect(() => {
+    fetchOldDetails();
+  }, []);
+
   return (
     <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Become a Mentor</h1>
+      <h1 className="text-3xl font-bold mb-6">Profile Details</h1>
 
       <div className="space-y-6">
         {/* Bio */}
@@ -189,11 +210,11 @@ const BecomeMentor = () => {
           onClick={handleSubmit}
           className="w-full bg-black text-white py-3 rounded-lg font-medium"
         >
-          Become a Mentor
+          Update you details
         </button>
       </div>
     </div>
   );
 };
 
-export default BecomeMentor;
+export default MentorProfile;

@@ -17,6 +17,10 @@ const mentorSchema = new mongoose.Schema(
       type: [String],
       required: true,
     },
+    consultationTypes: {
+      audio: { type: Boolean, default: false },
+      video: { type: Boolean, default: false },
+    },
     pricing: {
       audio: { type: Number, required: true, min: 0 },
       video: { type: Number, required: true, min: 0 },

@@ -9,6 +9,8 @@ interface Props {
 }
 
 const getActiveTab = (pathname: string) => {
+  if (pathname.includes("mentor/profile")) return "mentor-profile";
+  if (pathname.includes("availability")) return "availability";
   if (pathname.includes("settings") || pathname.includes("become-mentor"))
     return "settings";
   if (pathname.includes("feed")) return "feed";
@@ -20,6 +22,8 @@ const getActiveTab = (pathname: string) => {
 };
 
 const getTabKeyFromHref = (href: string) => {
+  if (href.includes("mentor/profile")) return "mentor-profile";
+  if (href.includes("availability")) return "availability";
   if (href.includes("settings") || href.includes("become-mentor"))
     return "settings";
   if (href.includes("feed")) return "feed";

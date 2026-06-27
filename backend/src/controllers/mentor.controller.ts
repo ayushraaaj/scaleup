@@ -10,7 +10,7 @@ export const createMontorProfile = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?._id;
 
-    const { bio, expertise, pricing } = req.body;
+    const { bio, expertise, pricing, consultationTypes } = req.body;
 
     const existingMentor = await Mentor.findOne({ userId });
 
@@ -23,11 +23,39 @@ export const createMontorProfile = asyncHandler(
       bio,
       expertise,
       pricing,
+      consultationTypes,
     });
 
     return res
       .status(201)
       .json(new ApiResponse("Mentor profile created", mentorProfile));
+  },
+);
+
+export const updateMentorProfile = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+
+    const { bio, expertise, pricing, consultationTypes } = req.body;
+
+    const mentorProfile = await Mentor.findOneAndUpdate(
+      { userId },
+      {
+        bio,
+        expertise,
+        pricing,
+        consultationTypes,
+      },
+      { new: true },
+    );
+
+    if (!mentorProfile) {
+      throw new ApiError(404, "Mentor profile no found");
+    }
+
+    return res
+      .status(200)
+      .json(new ApiResponse("Mentor profile updated", mentorProfile));
   },
 );
 

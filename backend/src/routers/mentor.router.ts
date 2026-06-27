@@ -8,6 +8,7 @@ import {
   getSingleMentor,
   mentorSessions,
   updateAvailability,
+  updateMentorProfile,
 } from "../controllers/mentor.controller";
 import {
   getAvailabilityValidator,
@@ -28,7 +29,8 @@ router.route("/my-sessions").get(checkIfMentor, mentorSessions);
 
 router
   .route("/profile")
-  .post(mentorProfileValidator(), validate, createMontorProfile);
+  .post(mentorProfileValidator(), validate, createMontorProfile)
+  .patch(mentorProfileValidator(), validate, updateMentorProfile);
 
 router.route("/all").get(getAllMentors);
 

@@ -1,6 +1,5 @@
 "use client";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+
 import {
   LayoutDashboard,
   Video,
@@ -12,16 +11,17 @@ import {
   PenSquare,
   CalendarDays,
   CalendarCheck,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react";
 import SidebarItem from "./SidebarItem";
 import { getUser } from "@/utils/auth";
+import { useState } from "react";
 
 const Sidebar = () => {
-  const pathname = usePathname();
-
   const user = getUser();
 
-  // console.log("User ", user);
+  const [mentorDashboardOpen, setMentorDashboardOpen] = useState(true);
 
   return (
     <aside className="w-64 h-screen border-r border-gray-200 bg-[#fcfcfc] flex shrink-0 flex-col justify-between p-6">
@@ -65,12 +65,49 @@ const Sidebar = () => {
           />
 
           {user?.role === "mentor" && (
-            <SidebarItem
-              href="/dashboard/my-sessions"
-              label="My Sessions"
-              icon={<CalendarCheck size={18} />}
-            />
+            <>
+              <SidebarItem
+                href="/dashboard/my-sessions"
+                label="My Sessions"
+                icon={<CalendarCheck size={18} />}
+              />
+
+              <button
+                onClick={() => setMentorDashboardOpen(!mentorDashboardOpen)}
+                className="w-full flex items-center px-2 py-2 text-sm rounded-lg hover:bg-gray-100 ml-3"
+              >
+                <div className="flex items-center gap-2 mr-3">
+                  <BarChart3 size={18} />
+                  <span>Mentor Dashboard</span>
+                </div>
+
+                <span>
+                  {mentorDashboardOpen ? (
+                    <ChevronDown size={16} />
+                  ) : (
+                    <ChevronRight size={16} />
+                  )}
+                </span>
+              </button>
+
+              {mentorDashboardOpen && (
+                <div className="ml-8 mt-1 space-y-1">
+                  <SidebarItem
+                    href="/dashboard/mentor/profile"
+                    label="Profile Details"
+                    icon={<Users size={16} />}
+                  />
+
+                  <SidebarItem
+                    href="/dashboard/mentor/availability"
+                    label="Availability"
+                    icon={<CalendarDays size={16} />}
+                  />
+                </div>
+              )}
+            </>
           )}
+
           <SidebarItem
             href="/dashboard/settings"
             label="Settings"
