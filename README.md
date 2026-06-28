@@ -118,10 +118,9 @@ ScaleUp
 │   ├── utils
 │   └── services
 │
-└── documentation
-    ├── FEATURES.md
-    ├── ARCHITECTURE.md
-    └── API.md
+├── FEATURES.md
+├── ARCHITECTURE.md
+└── API.md
 ```
 
 ---
