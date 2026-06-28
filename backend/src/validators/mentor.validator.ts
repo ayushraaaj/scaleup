@@ -70,7 +70,7 @@ export const updateAvailabilityValidator = () => {
   ];
 };
 
-export const getAvailabilityValidator = () => {
+export const getAvailabilityForUserValidator = () => {
   return [
     param("mentorId").isMongoId().withMessage("Invalid mentor ID"),
 

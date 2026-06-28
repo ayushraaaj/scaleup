@@ -159,7 +159,25 @@ export const updateAvailability = asyncHandler(
   },
 );
 
-export const getAvailability = asyncHandler(
+export const getAvailabilityForMentor = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+
+    const mentor = await Mentor.findOne({ userId });
+
+    if (!mentor) {
+      throw new ApiError(404, "Mentor not found");
+    }
+
+    return res
+      .status(200)
+      .json(
+        new ApiResponse("Mentor availability fetched", mentor.availability),
+      );
+  },
+);
+
+export const getAvailabilityForUser = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?._id;
     const { mentorId } = req.params;

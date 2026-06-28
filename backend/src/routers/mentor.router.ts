@@ -4,14 +4,15 @@ import {
   createMontorProfile,
   detailedMentorSession,
   getAllMentors,
-  getAvailability,
+  getAvailabilityForMentor,
+  getAvailabilityForUser,
   getSingleMentor,
   mentorSessions,
   updateAvailability,
   updateMentorProfile,
 } from "../controllers/mentor.controller";
 import {
-  getAvailabilityValidator,
+  getAvailabilityForUserValidator,
   mentorProfileValidator,
   singleMentorValidator,
   updateAvailabilityValidator,
@@ -35,18 +36,19 @@ router
 router.route("/all").get(getAllMentors);
 
 router
+  .route("/availability")
+  .get(getAvailabilityForMentor)
+  .patch(updateAvailabilityValidator(), validate, updateAvailability);
+
+router
   .route("/:username")
   .get(singleMentorValidator(), validate, getSingleMentor);
 
 router
   .route("/:mentorId/availability")
-  .get(getAvailabilityValidator(), validate, getAvailability);
+  .get(getAvailabilityForUserValidator(), validate, getAvailabilityForUser);
 
 router.use(checkIfMentor);
-
-router
-  .route("/availability")
-  .patch(updateAvailabilityValidator(), validate, updateAvailability);
 
 router.route("/my-sessions/:sessionId").get(detailedMentorSession);
 
