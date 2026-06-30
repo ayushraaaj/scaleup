@@ -28,6 +28,10 @@ interface MentorData {
   ratings: number;
   totalSessions: number;
   availability: Availability[];
+  consultationTypes: {
+    audio: boolean;
+    video: boolean;
+  };
 }
 
 interface TimeSlot {
@@ -62,6 +66,8 @@ const MentorDetails = () => {
     try {
       const res = await api.get(`/mentor/${username}`);
       setMentor(res.data.data);
+
+      console.log(res.data.data);
 
       await getAvailability("video");
     } catch (error: any) {
@@ -352,8 +358,12 @@ const MentorDetails = () => {
               value={sessionType ?? ""}
               onChange={(e) => setSessionType(e.target.value)}
             >
-              <option value="video">Video Consultation</option>
-              <option value="audio">Audio Strategy</option>
+              {mentor.consultationTypes.video && (
+                <option value="video">Video Consultation</option>
+              )}
+              {mentor.consultationTypes.audio && (
+                <option value="audio">Audio Strategy</option>
+              )}
             </select>
 
             <br />

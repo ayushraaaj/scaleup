@@ -66,12 +66,6 @@ const Sidebar = () => {
 
           {user?.role === "mentor" && (
             <>
-              <SidebarItem
-                href="/dashboard/my-sessions"
-                label="My Sessions"
-                icon={<CalendarCheck size={18} />}
-              />
-
               <button
                 onClick={() => setMentorDashboardOpen(!mentorDashboardOpen)}
                 className="w-full flex items-center px-2 py-2 text-sm rounded-lg hover:bg-gray-100 ml-3"
@@ -102,6 +96,18 @@ const Sidebar = () => {
                     href="/dashboard/mentor/availability"
                     label="Availability"
                     icon={<CalendarDays size={16} />}
+                  />
+
+                  <SidebarItem
+                    href="/dashboard/my-posts"
+                    label="My Posts"
+                    icon={<CalendarCheck size={18} />}
+                  />
+
+                  <SidebarItem
+                    href="/dashboard/my-sessions"
+                    label="My Sessions"
+                    icon={<CalendarCheck size={18} />}
                   />
                 </div>
               )}
