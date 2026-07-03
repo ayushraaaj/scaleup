@@ -36,7 +36,6 @@ router
   .route("/:postId/comments")
   .get(getCommentsValidator(), validate, getComments);
 
-
 router
   .route("/:postId/comment/:commentId")
   .delete(deleteCommentValidator(), validate, deleteComment)

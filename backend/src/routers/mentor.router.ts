@@ -22,9 +22,9 @@ import { getMentorPosts } from "../controllers/post.controller";
 
 const router = Router();
 
-router.route("/:username/posts").get(getMentorPosts);
-
 router.use(verifyJWT);
+
+router.route("/my-posts").get(getMentorPosts);
 
 router.route("/my-sessions").get(checkIfMentor, mentorSessions);
 
