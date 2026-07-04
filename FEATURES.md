@@ -61,13 +61,20 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 
 # Feed Module
 
-## Posts
+## Feed
 
-- ✅ Create Posts
 - ✅ View Feed
 - ✅ Feed Pagination
 - ✅ Like Posts
 - ✅ Comment on Posts
+
+## Post Management
+
+- ✅ Create Posts
+- ✅ View Individual Post
+- ✅ My Posts
+- ✅ Edit Posts
+- ✅ Delete Posts
 
 ---
 

@@ -50,7 +50,7 @@ const CreatePostLayout = (props?: any) => {
             <header className="">
               <input
                 type="text"
-                placeholder="Enter title..."
+                placeholder="Enter Title..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full text-4xl font-bold outline-none border-b border-gray-300 focus:border-black pb-2 mb-6"
