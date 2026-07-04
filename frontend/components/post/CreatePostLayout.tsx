@@ -8,7 +8,7 @@ import { JSONContent } from "@tiptap/react";
 import { Send, ShieldCheck, ArrowUpRight } from "lucide-react";
 
 const CreatePostLayout = (props?: any) => {
-  const { editTitle, editContent } = props;
+  const { editTitle, editContent, postId } = props;
 
   const user = getUser();
 
@@ -22,7 +22,12 @@ const CreatePostLayout = (props?: any) => {
     }
 
     try {
-      const res = await api.post("/post/create", { title, content });
+      let res;
+      if (editContent) {
+        res = await api.patch(`/post/${postId}`, { title, content });
+      } else {
+        res = await api.post("/post/create", { title, content });
+      }
       toast.success(res.data.message);
     } catch (error) {
       toast.error("Post not created");
@@ -64,7 +69,8 @@ const CreatePostLayout = (props?: any) => {
             <div className="space-y-6">
               <div className="bg-black text-white p-8 shadow-[8px_8px_0px_0px_rgba(59,130,246,1)]">
                 <h2 className="text-2xl font-black uppercase tracking-tighter mb-4 flex items-center gap-2">
-                  Publish <ArrowUpRight size={24} className="text-blue-500" />
+                  {editTitle ? "Update" : "Publish"}{" "}
+                  <ArrowUpRight size={24} className="text-blue-500" />
                 </h2>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-8 leading-relaxed">
                   Finalize your scaling article. Your followers will be notified
@@ -75,7 +81,7 @@ const CreatePostLayout = (props?: any) => {
                   onClick={handleSubmit}
                   className="w-full bg-white text-black py-4 font-black uppercase text-xs flex items-center justify-center gap-3 hover:bg-blue-600 hover:text-white transition-all transform active:translate-y-1"
                 >
-                  <Send size={16} /> Publish Article
+                  <Send size={16} /> {editTitle ? "Update" : "Publish"} Article
                 </button>
               </div>
 

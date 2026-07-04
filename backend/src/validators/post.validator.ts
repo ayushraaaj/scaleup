@@ -84,13 +84,15 @@ export const editPostValidator = () => {
       .withMessage("Title must be atleast 5 characters long"),
 
     body("content")
-      .optional()
-      .trim()
       .notEmpty()
       .withMessage("Content is required")
       .bail()
-      .isLength({ min: 50 })
-      .withMessage("Content must be atleast 50 characters long"),
+      .custom((value) => {
+        if (typeof value !== "object" || value === null) {
+          throw new Error("Content must be a valid JSON object");
+        }
+        return true;
+      }),
 
     body("visibility")
       .optional()

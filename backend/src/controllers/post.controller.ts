@@ -202,12 +202,18 @@ export const editPost = asyncHandler(async (req: Request, res: Response) => {
   if (title) {
     updateFields.title = title;
   }
+
   if (content) {
     updateFields.content = content;
+
+    const plainText = generateText(content, [StarterKit]);
+    updateFields.preview = plainText.slice(0, 120) + "...";
   }
+
   if (tags) {
     updateFields.tags = tags;
   }
+
   if (visibility) {
     updateFields.visibility = visibility;
   }
@@ -215,6 +221,10 @@ export const editPost = asyncHandler(async (req: Request, res: Response) => {
   if (Object.keys(updateFields).length === 0) {
     throw new ApiError(400, "No valid fields provided for update");
   }
+
+  const plainText = generateText(content, [StarterKit]);
+
+  const preview = plainText.slice(0, 120) + "...";
 
   const updatedPost = await Post.findOneAndUpdate(
     { _id: postId, mentorId: userId },

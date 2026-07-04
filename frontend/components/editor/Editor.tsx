@@ -14,6 +14,7 @@ import {
   Heading2,
   Type,
 } from "lucide-react";
+import { useEffect } from "react";
 
 interface EditorProps {
   content: JSONContent | null;
@@ -44,6 +45,14 @@ const Editor = (props: EditorProps) => {
       },
     },
   });
+
+  useEffect(() => {
+    if (!editor || !content) {
+      return;
+    }
+
+    editor.commands.setContent(content ?? "");
+  }, [editor]);
 
   if (!editor) return null;
 

@@ -41,7 +41,9 @@ const EditPost = () => {
     return null;
   }
 
-  return <CreatePostLayout editTitle={title} editContent={content} />;
+  return (
+    <CreatePostLayout editTitle={title} editContent={content} postId={postId} />
+  );
 };
 
 export default EditPost;
