@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import CallChat from "../chat/CallChat";
 import CameraPlaceholder from "./CameraPlaceholder";
+import EndSession from "../modals/EndSession";
 
 const VideoConsultaton = (props: any) => {
   const { id } = props;
@@ -36,6 +37,11 @@ const VideoConsultaton = (props: any) => {
   const [remoteUserFullname, setRemoteUserFullname] = useState("");
   const [remoteMicEnabled, setRemoteMicEnabled] = useState(false);
   const [remoteScreenSharing, setRemoteScreenSharing] = useState(false);
+
+  const [endSessionRequest, setEndSessionRequest] = useState({
+    open: false,
+    fullname: "",
+  });
 
   const createPeerConnection = () => {
     if (peerConnection.current) {
@@ -319,21 +325,56 @@ const VideoConsultaton = (props: any) => {
     pendingCandidates.current = [];
   };
 
-  const endCall = () => {
-    socket.emit("end-call", { id, fullname: user?.fullname });
-
-    clearConnection();
-
-    router.back();
+  const requestedEndSession = () => {
+    socket.emit("request-end-session", {
+      id,
+      fullname: user?.fullname,
+      userId: user?._id,
+    });
   };
 
-  const listenForCallEnd = () => {
+  const onContinueSession = () => {
+    socket.emit("continue-session", {
+      id,
+      fullname: user?.fullname,
+      userId: user?._id,
+    });
+
+    setEndSessionRequest({ open: false, fullname: "" });
+  };
+
+  const listenForContinueSession = () => {
+    socket.on("session-continued", ({ fullname }) => {
+      toast.error(`${fullname} wants to continue the session.`);
+    });
+  };
+
+  const onAcceptEndSession = () => {
+    socket.emit("end-call", { id, fullname: user?.fullname });
+
+    // clearConnection();
+
+    // toast.success(`Session ended`);
+
+    // router.back();
+  };
+
+  const listenForRequestedEndSession = () => {
+    socket.on("end-session-requested", ({ fullname }) => {
+      console.log("Received end-session-requested");
+
+      setEndSessionRequest({ open: true, fullname });
+    });
+  };
+
+  const listenForSessionEnd = () => {
     socket.on("call-ended", ({ fullname }) => {
       console.log("Remote user ended call");
 
       clearConnection();
 
-      toast.success(`${fullname} left the call`);
+      // toast.success(`${fullname} left the call`);
+      toast.success(`Session ended`);
 
       router.back();
     });
@@ -500,7 +541,7 @@ const VideoConsultaton = (props: any) => {
 
     listenForIceCandidate();
 
-    listenForCallEnd();
+    listenForSessionEnd();
 
     listenForCallDecline();
 
@@ -509,6 +550,10 @@ const VideoConsultaton = (props: any) => {
     listenForRemoteMicStatus();
 
     listenForRemoteScreenShareStatus();
+
+    listenForRequestedEndSession();
+
+    listenForContinueSession();
 
     socket.on("connect", () => {
       console.log("Connected:", socket.id);
@@ -533,6 +578,8 @@ const VideoConsultaton = (props: any) => {
       socket.off("remote-camera-status");
       socket.off("remote-mic-status");
       socket.off("remote-screen-share-status");
+      socket.off("end-session-requested");
+      socket.off("session-continued");
     };
   }, []);
 
@@ -624,12 +671,23 @@ const VideoConsultaton = (props: any) => {
 
           <button onClick={() => setShowChat(!showChat)}>Chat</button>
 
-          <button onClick={endCall} className="bg-red-500 text-white px-4 py-2">
+          <button
+            onClick={requestedEndSession}
+            className="bg-red-500 text-white px-4 py-2"
+          >
             End Call
           </button>
         </div>
       </div>
       {showChat && <CallChat id={id} url="" />}
+
+      {endSessionRequest.open && (
+        <EndSession
+          fullname={endSessionRequest.fullname}
+          onAcceptEndSession={onAcceptEndSession}
+          onContinueSession={onContinueSession}
+        />
+      )}
     </div>
   );
 };

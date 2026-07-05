@@ -1,5 +1,6 @@
 import { Server } from "socket.io";
 import { CLIENT_URL } from "../config/env";
+import { Session } from "../models/session.model";
 
 export const initializeSocket = (server: any) => {
   const io = new Server(server, {
@@ -47,11 +48,71 @@ export const initializeSocket = (server: any) => {
       socket.to(id).emit("receive-ice-candidate", candidate);
     });
 
-    socket.on("end-call", ({ id, fullname }) => {
-      socket.to(id).emit("call-ended", { fullname });
+    socket.on("end-call", async ({ id, fullname }) => {
+      await Session.findOneAndUpdate(
+        { bookingId: id },
+        {
+          $set: {
+            sessionStatus: "completed",
+            completedAt: new Date(),
+            completionReason: "mutual_agreement",
+          },
+          $unset: {
+            endRequestedBy: "",
+            endRequestedAt: "",
+          },
+        },
+        { new: true },
+      );
+
+      // socket.to(id).emit("call-ended", { fullname });
+
+      io.to(id).emit("call-ended", { fullname });
     });
 
-    socket.on("call-request", ({ id }) => {
+    socket.on("request-end-session", async ({ id, fullname, userId }) => {
+      const session = await Session.findOneAndUpdate(
+        { bookingId: id },
+        {
+          $set: {
+            sessionStatus: "end_requested",
+            endRequestedBy: userId,
+            endRequestedAt: new Date(),
+          },
+        },
+        { new: true },
+      );
+
+      console.log(session);
+
+      socket.to(id).emit("end-session-requested", { fullname });
+    });
+
+    socket.on("continue-session", async ({ id, fullname, userId }) => {
+      await Session.findOneAndUpdate(
+        { bookingId: id },
+        {
+          $set: {
+            sessionStatus: "ongoing",
+          },
+          $unset: {
+            endRequestedBy: "",
+            endRequestedAt: "",
+          },
+        },
+        { new: true },
+      );
+
+      socket.to(id).emit("session-continued", { fullname });
+    });
+
+    socket.on("call-request", async ({ id }) => {
+      await Session.findOneAndUpdate(
+        { bookingId: id },
+        {},
+        { upsert: true, new: true },
+      );
+
       socket.to(id).emit("incoming-call");
     });
 
