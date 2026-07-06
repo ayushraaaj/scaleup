@@ -18,6 +18,9 @@ const VideoConsultaton = (props: any) => {
 
   const isCaller = searchParams.get("caller") === "true";
 
+  const date = searchParams.get("date") || "";
+  const endTime = searchParams.get("endTime") || "";
+
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const peerConnection = useRef<RTCPeerConnection | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -594,6 +597,29 @@ const VideoConsultaton = (props: any) => {
 
     return () => clearInterval(interval);
   }, [callStarted]);
+
+  useEffect(() => {
+    const getSessionEndTime = (date: string, endTime: string) => {
+      return new Date(`${date}T${endTime}:00`);
+    };
+
+    const newEndTime = getSessionEndTime(date, endTime);
+
+    console.log(newEndTime);
+
+    const remainingTime = newEndTime.getTime() - Date.now();
+
+    if (remainingTime <= 0) {
+      console.log("Session already ended");
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      console.log("Session time completed");
+    }, remainingTime);
+
+    return () => clearTimeout(timeout);
+  }, [date, endTime]);
 
   return (
     <div>

@@ -28,7 +28,9 @@ const SessionDetails = () => {
       id,
     });
 
-    router.push(`/call/${id}?caller=true`);
+    router.push(
+      `/call/${id}?caller=true&date=${details.date}&endTime=${details.endTime}`,
+    );
   };
 
   return (

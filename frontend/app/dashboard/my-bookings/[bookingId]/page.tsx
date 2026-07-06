@@ -108,7 +108,14 @@ const BookingDetails = () => {
             </div>
           )}
 
-          {incomingCall && <IncomingCall id={id} decline={declineCall} />}
+          {incomingCall && (
+            <IncomingCall
+              id={id}
+              decline={declineCall}
+              date={details.date}
+              endTime={details.endTime}
+            />
+          )}
         </aside>
 
         <CallChat id={id} url={url} />
