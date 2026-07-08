@@ -616,6 +616,8 @@ const VideoConsultaton = (props: any) => {
 
     const timeout = setTimeout(() => {
       console.log("Session time completed");
+
+      socket.emit("session-time-expired", { id });
     }, remainingTime);
 
     return () => clearTimeout(timeout);

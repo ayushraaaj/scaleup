@@ -106,6 +106,25 @@ export const initializeSocket = (server: any) => {
       socket.to(id).emit("session-continued", { fullname });
     });
 
+    socket.on("session-time-expired", async ({ id }) => {
+      await Session.findOneAndUpdate(
+        { bookingId: id },
+        {
+          $set: {
+            sessiontatus: "completed",
+            completedAt: new Date(),
+            completionReason: "scheduled_end",
+          },
+        },
+      );
+
+      console.log("Session expired");
+
+      const fullname = "Ayush";
+
+      io.to(id).emit("call-ended", { fullname });
+    });
+
     socket.on("call-request", async ({ id }) => {
       await Session.findOneAndUpdate(
         { bookingId: id },
