@@ -371,7 +371,7 @@ const VideoConsultaton = (props: any) => {
   };
 
   const listenForSessionEnd = () => {
-    socket.on("call-ended", ({ fullname }) => {
+    socket.on("call-ended", () => {
       console.log("Remote user ended call");
 
       clearConnection();

@@ -2,8 +2,10 @@ import { Server } from "socket.io";
 import { CLIENT_URL } from "../config/env";
 import { Session } from "../models/session.model";
 
+let io: Server;
+
 export const initializeSocket = (server: any) => {
-  const io = new Server(server, {
+  io = new Server(server, {
     cors: {
       origin: CLIENT_URL,
       credentials: true,
@@ -67,7 +69,7 @@ export const initializeSocket = (server: any) => {
 
       // socket.to(id).emit("call-ended", { fullname });
 
-      io.to(id).emit("call-ended", { fullname });
+      io.to(id).emit("call-ended");
     });
 
     socket.on("request-end-session", async ({ id, fullname, userId }) => {
@@ -122,7 +124,7 @@ export const initializeSocket = (server: any) => {
 
       const fullname = "Ayush";
 
-      io.to(id).emit("call-ended", { fullname });
+      io.to(id).emit("call-ended");
     });
 
     socket.on("call-request", async ({ id }) => {
@@ -161,4 +163,12 @@ export const initializeSocket = (server: any) => {
       socket.to(id).emit("participant-rejoined", { fullname });
     });
   });
+};
+
+export const getIO = () => {
+  if (!io) {
+    throw new Error("Socket.IO has not been initialized");
+  }
+
+  return io;
 };

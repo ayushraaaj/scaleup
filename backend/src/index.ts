@@ -1,9 +1,10 @@
 import dotenv from "dotenv";
 import app from "./app";
-import {  PORT } from "./config/env";
+import { PORT } from "./config/env";
 import connectDB from "./db/db";
 import http from "http";
 import { initializeSocket } from "./services/socket";
+import { startSessionCleanup } from "./jobs/sessionCleanup";
 
 dotenv.config({ path: "./.env" });
 
@@ -15,6 +16,8 @@ initializeSocket(server);
 
 server.listen(PORT || 8001, () => {
   console.log(`Server is running on Port: ${PORT || 8001}`);
+
+  startSessionCleanup();
 });
 
 // app.listen(PORT || 8001, () => {
