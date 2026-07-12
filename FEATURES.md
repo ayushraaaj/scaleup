@@ -151,10 +151,23 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - ✅ Peer-to-Peer Video Calls
 - ✅ Camera Toggle
 - ✅ Microphone Toggle
+- ✅ Screen Sharing
 - ✅ Incoming Call Handling
 - ✅ Call Decline Flow
 - ✅ Mentor to User Calls
 - ✅ Mentor to Mentor Calls
+
+## Session Management
+
+- ✅ Booking Based Video Sessions
+- ✅ Session Lifecycle Tracking
+- ✅ End Session Request Workflow
+- ✅ Mutual Session Completion
+- ✅ Continue Session Flow
+- ✅ Automatic Session Expiration
+- ✅ Frontend Timer Based Session End
+- ✅ Cron-Based Session Recovery
+- ✅ Persistent Video Session State
 
 ---
 
@@ -228,6 +241,8 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - ✅ Cloudinary Integration
 - ✅ Socket.IO Signaling
 - ✅ WebRTC Integration
+- ✅ Background Cron Jobs
+- ✅ Session Lifecycle Management
 
 ## Booking Architecture
 
@@ -271,6 +286,9 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - Chat is isolated per booking to keep conversations organized.
 - WebRTC is used for peer-to-peer media transmission.
 - Socket.IO is responsible for signaling and real-time events.
+- Every consultation creates a dedicated Video Session.
+- Session state is persisted independently from the booking.
+- Automatic session completion is handled through frontend timers with cron-based recovery.
 
 ---
 

@@ -45,10 +45,21 @@ View Mentor Profile
 Book Consultation
  │
  ▼
-Video Consultation
+Join Video Session
  │
  ▼
 Real-Time Chat & File Sharing
+ │
+ ▼
+Session Management
+ │
+ ├── End Session Request
+ │
+ ├── Continue Session
+ │
+ ├── Mutual Session Completion
+ │
+ └── Automatic Session Expiration
  │
  ▼
 Session Completion
@@ -71,6 +82,8 @@ Some of the challenges addressed include:
 - WebRTC Video Consultation
 - Secure File Uploads
 - Modular Backend Architecture
+- Video Session Lifecycle Management
+- Background Recovery Using Cron Jobs
 
 ---
 
@@ -237,6 +250,9 @@ Building ScaleUp has provided hands-on experience with several software engineer
 - Booking Workflow Design
 - Race Condition Prevention
 - Modular Backend Architecture
+- WebRTC Session Lifecycle Management
+- Background Job Scheduling with Cron
+- Designing Recovery Mechanisms for Distributed Systems
 
 ---
 
