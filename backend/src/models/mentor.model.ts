@@ -31,6 +31,14 @@ const mentorSchema = new mongoose.Schema(
       min: 0,
       max: 5,
     },
+    totalReviews: {
+      type: Number,
+      default: 0,
+    },
+    totalRatings: {
+      type: Number,
+      default: 0,
+    },
     totalSessions: {
       type: Number,
       default: 0,
