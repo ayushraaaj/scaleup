@@ -35,7 +35,7 @@ const mentorSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    totalRatings: {
+    totalRating: {
       type: Number,
       default: 0,
     },

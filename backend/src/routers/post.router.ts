@@ -32,6 +32,7 @@ router.use(verifyJWT);
 router.route("/all").get(getAllPosts);
 
 router.route("/:postId").get(singlePostValidator(), validate, getSinglePost);
+
 router
   .route("/:postId/comments")
   .get(getCommentsValidator(), validate, getComments);
@@ -44,6 +45,7 @@ router
 router
   .route("/:postId/react")
   .post(postReactionValidator(), validate, reactToPost);
+
 router
   .route("/:postId/comment")
   .post(addCommentValidator(), validate, addComment);

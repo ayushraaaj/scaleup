@@ -23,6 +23,7 @@ import mentorRouter from "./routers/mentor.router";
 import postRouter from "./routers/post.router";
 import bookingRouter from "./routers/booking.router";
 import messageRouter from "./routers/message.router";
+import reviewRouter from "./routers/review.router";
 
 app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/auth", authRouter);
@@ -30,6 +31,7 @@ app.use("/api/v1/mentor", mentorRouter);
 app.use("/api/v1/post", postRouter);
 app.use("/api/v1/booking", bookingRouter);
 app.use("/api/v1/message", messageRouter);
+app.use("/api/v1/review", reviewRouter);
 
 app.use(errorHandler);
 
