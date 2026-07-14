@@ -1,11 +1,22 @@
 import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.middleware";
-import { createReview } from "../controllers/review.controller";
+import {
+  createReview,
+  editReview,
+  getMentorReviews,
+  getReviewByUser,
+} from "../controllers/review.controller";
 
 const router = Router();
 
 router.use(verifyJWT);
 
-router.route(`/create/:bookingId`).post(createReview);
+router.route("/create").post(createReview);
+
+router.route("/mentor/:mentorId").get(getMentorReviews);
+
+router.route("/my").get(getReviewByUser);
+
+router.route("/:reviewId").patch(editReview);
 
 export default router;
