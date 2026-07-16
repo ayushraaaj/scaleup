@@ -163,7 +163,7 @@ export const editReview = asyncHandler(async (req: Request, res: Response) => {
 
   const { rating, review } = req.body;
 
-  const alreadyReviewed = await Review.findById(reviewId);
+  const alreadyReviewed = await Review.findOne({ _id: reviewId, userId });
 
   if (!alreadyReviewed) {
     throw new ApiError(404, "Review not found");
@@ -235,3 +235,69 @@ export const editReview = asyncHandler(async (req: Request, res: Response) => {
     await dbSession.endSession();
   }
 });
+
+export const deleteReview = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+
+    const { reviewId } = req.params;
+
+    const review = await Review.findOne({ _id: reviewId, userId });
+
+    if (!review) {
+      throw new ApiError(404, "Review not found");
+    }
+
+    const dbSession = await mongoose.startSession();
+
+    try {
+      dbSession.startTransaction();
+
+      const mentor = await Mentor.findById(review.mentorId).session(dbSession);
+
+      if (!mentor) {
+        throw new ApiError(404, "Mentor not found");
+      }
+
+      const totalRating = mentor.totalRating - review.rating;
+      const totalSessions = mentor.totalSessions - 1;
+
+      const ratings = Number((totalRating / totalSessions).toFixed(2));
+
+      await Mentor.findByIdAndUpdate(
+        mentor._id,
+        {
+          $set: {
+            totalRating,
+            totalSessions,
+            ratings,
+          },
+        },
+        { session: dbSession },
+      );
+
+      const deletedReview = await Review.findOneAndDelete(
+        {
+          _id: reviewId,
+          userId,
+        },
+        { session: dbSession },
+      );
+
+      if (!deletedReview) {
+        throw new ApiError(400, "Failed to delete review");
+      }
+
+      await dbSession.commitTransaction();
+
+      return res
+        .status(200)
+        .json(new ApiResponse("Review deleted successfully", {}));
+    } catch (error) {
+      await dbSession.abortTransaction();
+      throw error;
+    } finally {
+      await dbSession.endSession();
+    }
+  },
+);

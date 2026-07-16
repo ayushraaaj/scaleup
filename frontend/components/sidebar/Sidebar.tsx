@@ -13,6 +13,7 @@ import {
   CalendarCheck,
   ChevronDown,
   ChevronRight,
+  Star,
 } from "lucide-react";
 import SidebarItem from "./SidebarItem";
 import { getUser } from "@/utils/auth";
@@ -62,6 +63,12 @@ const Sidebar = () => {
             href="/dashboard/my-bookings"
             label="My Bookings"
             icon={<CalendarDays size={18} />}
+          />
+
+          <SidebarItem
+            href="/dashboard/my-reviews"
+            label="My Reviews"
+            icon={<Star size={18} />}
           />
 
           {user?.role === "mentor" && (

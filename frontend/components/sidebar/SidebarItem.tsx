@@ -19,6 +19,8 @@ const getActiveTab = (pathname: string) => {
   if (pathname.includes("create-post")) return "create-post";
   if (pathname.includes("my-bookings")) return "my-bookings";
   if (pathname.includes("my-sessions")) return "my-sessions";
+  if (pathname.includes("my-posts")) return "my-posts";
+  if (pathname.includes("my-reviews")) return "my-reviews";
 };
 
 const getTabKeyFromHref = (href: string) => {
@@ -32,6 +34,8 @@ const getTabKeyFromHref = (href: string) => {
   if (href.includes("create-post")) return "create-post";
   if (href.includes("my-bookings")) return "my-bookings";
   if (href.includes("my-sessions")) return "my-sessions";
+  if (href.includes("my-posts")) return "my-posts";
+  if (href.includes("my-reviews")) return "my-reviews";
 };
 
 const SidebarItem = (props: Props) => {
