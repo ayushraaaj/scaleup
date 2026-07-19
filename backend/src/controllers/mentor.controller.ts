@@ -269,10 +269,9 @@ export const mentorSessions = asyncHandler(
       throw new ApiError(404, "Mentor not found");
     }
 
-    const bookings = await Booking.find({ mentorId: mentor._id }).populate(
-      "userId",
-      "fullname username",
-    );
+    const bookings = await Booking.find({ mentorId: mentor._id })
+      .populate("userId", "fullname username")
+      .sort({ createdAt: -1 });
 
     if (!bookings) {
       throw new ApiError(404, "Sessions not found");

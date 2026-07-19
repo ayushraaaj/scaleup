@@ -53,6 +53,17 @@ const bookingSchema = new mongoose.Schema(
     expiresAt: {
       type: Date,
     },
+    isReviewed: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    reviewId: {
+      type: mongoose.Schema.Types.ObjectId,
+    },
+    sessionStatus: {
+      type: String,
+    },
   },
   { timestamps: true },
 );

@@ -96,6 +96,17 @@ export const createReview = asyncHandler(
         },
       );
 
+      await Booking.findByIdAndUpdate(
+        bookingId,
+        {
+          $set: {
+            isReviewed: true,
+            reviewId: newReview[0]._id,
+          },
+        },
+        { session: dbSession },
+      );
+
       await dbSession.commitTransaction();
 
       return res

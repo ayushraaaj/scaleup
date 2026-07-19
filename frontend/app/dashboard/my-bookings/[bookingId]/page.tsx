@@ -116,6 +116,12 @@ const BookingDetails = () => {
               endTime={details.endTime}
             />
           )}
+
+          {details?.sessionStatus === "completed" && (
+            <button>
+              {details.isReviewed ? "View Review" : "Leave Review"}
+            </button>
+          )}
         </aside>
 
         <CallChat id={id} url={url} />

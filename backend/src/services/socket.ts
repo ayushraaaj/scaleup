@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import { CLIENT_URL } from "../config/env";
 import { Session } from "../models/session.model";
+import { Booking } from "../models/booking.model";
 
 let io: Server;
 
@@ -67,6 +68,12 @@ export const initializeSocket = (server: any) => {
         { new: true },
       );
 
+      await Booking.findByIdAndUpdate(id, {
+        $set: {
+          sessionStatus: "completed",
+        },
+      });
+
       // socket.to(id).emit("call-ended", { fullname });
 
       io.to(id).emit("call-ended");
@@ -84,6 +91,12 @@ export const initializeSocket = (server: any) => {
         },
         { new: true },
       );
+
+      await Booking.findByIdAndUpdate(id, {
+        $set: {
+          sessionStatus: "completed",
+        },
+      });
 
       console.log(session);
 
@@ -119,6 +132,12 @@ export const initializeSocket = (server: any) => {
           },
         },
       );
+
+      await Booking.findByIdAndUpdate(id, {
+        $set: {
+          sessionStatus: "completed",
+        },
+      });
 
       console.log("Session expired");
 

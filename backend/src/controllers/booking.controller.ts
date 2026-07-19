@@ -81,11 +81,13 @@ export const getBookings = asyncHandler(async (req: Request, res: Response) => {
   const bookings = await Booking.find({
     userId: userId,
     status: "confirmed",
-  }).populate({
-    path: "mentorId",
-    select: "userId",
-    populate: { path: "userId", select: "username fullname" },
-  });
+  })
+    .populate({
+      path: "mentorId",
+      select: "userId",
+      populate: { path: "userId", select: "username fullname" },
+    })
+    .sort({ createdAt: -1 });
 
   if (!bookings) {
     throw new ApiError(404, "Bookings not found");

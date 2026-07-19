@@ -10,6 +10,9 @@ import {
   Video,
   Mic,
   Award,
+  Calendar,
+  Clock,
+  CheckCircle2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -61,6 +64,7 @@ const MentorDetails = () => {
   const [availableDates, setAvailableDates] = useState<string[] | null>(null);
   const [selectedSlot, setSelectedSlot] = useState<SlotTime | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const fetchMentor = async () => {
     try {
@@ -96,6 +100,7 @@ const MentorDetails = () => {
 
     try {
       setSelectedDate(date);
+      setSelectedSlot(null);
       console.log(date);
       const res = await api.get(`/mentor/${mentor._id}/availability`, {
         params: { date },
@@ -114,6 +119,13 @@ const MentorDetails = () => {
 
   const confirmBooking = async () => {
     if (!mentor || !sessionType || !selectedSlot) {
+      toast.error("Please complete your slot selection first.");
+      return;
+    }
+    if (!termsAccepted) {
+      toast.error(
+        "You must agree to the terms and conditions before confirming.",
+      );
       return;
     }
 
@@ -133,6 +145,7 @@ const MentorDetails = () => {
         }
         return prev.filter((p) => p.startTime !== selectedSlot.startTime);
       });
+      setSelectedSlot(null);
     } catch (error: any) {
       toast.error(error.response.data.message ?? "Failed to book");
     }
@@ -158,7 +171,6 @@ const MentorDetails = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Top Navigation */}
       <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-4 flex items-center justify-between">
         <button
           onClick={() => router.back()}
@@ -172,7 +184,6 @@ const MentorDetails = () => {
       </div>
 
       <div className="flex flex-col lg:flex-row">
-        {/* Left Column: Bio & Expertise */}
         <article className="flex-1 px-8 lg:px-20 py-12 border-r border-gray-100">
           <div className="max-w-3xl">
             <header className="mb-16">
@@ -209,7 +220,6 @@ const MentorDetails = () => {
               </div>
             </header>
 
-            {/* Expertise Tags */}
             <section className="mb-16">
               <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400 mb-6">
                 Core Competencies
@@ -229,7 +239,6 @@ const MentorDetails = () => {
               </div>
             </section>
 
-            {/* Bio Section */}
             <section className="mb-16">
               <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400 mb-6">
                 About
@@ -241,7 +250,6 @@ const MentorDetails = () => {
               </div>
             </section>
 
-            {/* Stats */}
             <section className="grid grid-cols-2 gap-0 border border-gray-100">
               <div className="p-10 border-r border-gray-100">
                 <p className="text-[40px] font-black leading-none mb-2">
@@ -258,17 +266,155 @@ const MentorDetails = () => {
                 </p>
               </div>
             </section>
+
+            <section className="mt-16 border-t border-gray-100 pt-16">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400 mb-6">
+                1. Select Available Date
+              </h3>
+
+              <div className="flex flex-wrap gap-3 mb-12">
+                {availableDates && availableDates.length > 0 ? (
+                  availableDates.map((date) => {
+                    const isSelected = selectedDate === date;
+                    return (
+                      <button
+                        key={date}
+                        onClick={() => getSlots(date)}
+                        className={`px-5 py-3 border-2 font-black uppercase text-xs tracking-wider transition-all cursor-pointer ${
+                          isSelected
+                            ? "bg-black text-white border-black shadow-[4px_4px_0px_0px_rgba(37,99,235,1)]"
+                            : "bg-white text-black border-black hover:bg-gray-50"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <Calendar size={14} />
+                          {date}
+                        </span>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    No matching dates available.
+                  </p>
+                )}
+              </div>
+
+              {selectedDate && (
+                <>
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400 mb-6">
+                    2. Choose Strategy Time Window
+                  </h3>
+
+                  {slots && slots.length > 0 ? (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-12">
+                      {slots.map((slot) => {
+                        const isSlotSelected =
+                          selectedSlot?.startTime === slot.startTime;
+                        return (
+                          <button
+                            key={slot.startTime}
+                            onClick={() =>
+                              setSlot(slot.startTime, slot.endTime)
+                            }
+                            className={`p-4 border-2 font-black uppercase text-xs tracking-wider transition-all text-center flex items-center justify-center gap-2 cursor-pointer ${
+                              isSlotSelected
+                                ? "bg-blue-600 text-white border-blue-600 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+                                : "bg-[#fcfcfc] text-zinc-800 border-zinc-200 hover:border-black"
+                            }`}
+                          >
+                            <Clock size={13} />
+                            {slot.startTime} - {slot.endTime}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="p-6 border border-dashed border-gray-200 text-center mb-12">
+                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        All sessions have been occupied for this date.
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {selectedSlot && (
+                <div className="bg-[#fcfcfc] border-2 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] max-w-xl animate-fade-in">
+                  <h4 className="text-lg font-black uppercase tracking-tight mb-4 flex items-center gap-2">
+                    <CheckCircle2 className="text-blue-600" size={20} /> Booking
+                    Summary
+                  </h4>
+
+                  <div className="space-y-3 mb-6 border-b border-gray-200 pb-6 text-xs uppercase font-bold tracking-wider text-zinc-600">
+                    <p>
+                      <span className="text-gray-400">Consultation Date:</span>{" "}
+                      <span className="text-black ml-1">{selectedDate}</span>
+                    </p>
+                    <p>
+                      <span className="text-gray-400">Reserved Window:</span>{" "}
+                      <span className="text-black ml-1">
+                        {selectedSlot.startTime} to {selectedSlot.endTime}
+                      </span>
+                    </p>
+
+                    <div className="flex items-center gap-3 pt-2">
+                      <span className="text-gray-400">Delivery Channels:</span>
+                      <select
+                        value={sessionType ?? ""}
+                        onChange={(e) => setSessionType(e.target.value)}
+                        className="border-2 border-black bg-white px-3 py-1 text-xs font-black uppercase cursor-pointer outline-none focus:border-blue-600"
+                      >
+                        {mentor.consultationTypes.video && (
+                          <option value="video">Video Call Session</option>
+                        )}
+                        {mentor.consultationTypes.audio && (
+                          <option value="audio">Audio Strategy Session</option>
+                        )}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 mb-6">
+                    <input
+                      type="checkbox"
+                      id="terms"
+                      checked={termsAccepted}
+                      onChange={(e) => setTermsAccepted(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 border-2 border-black rounded-none text-black accent-black cursor-pointer"
+                    />
+                    <label
+                      htmlFor="terms"
+                      className="text-[11px] font-bold uppercase tracking-tight text-gray-500 cursor-pointer select-none leading-tight"
+                    >
+                      By confirming, you agree that this structured session is
+                      final, contractual, and non-refundable.
+                    </label>
+                  </div>
+
+                  <button
+                    onClick={confirmBooking}
+                    disabled={!termsAccepted}
+                    className={`w-full py-4 text-xs font-black uppercase tracking-widest border-2 transition-all ${
+                      termsAccepted
+                        ? "bg-black border-black text-white hover:bg-blue-600 hover:border-blue-600 cursor-pointer shadow-[4px_4px_0px_0px_rgba(37,99,235,1)]"
+                        : "bg-gray-100 border-gray-200 text-gray-400 cursor-not-allowed"
+                    }`}
+                  >
+                    Finalize & Confirm Appointment
+                  </button>
+                </div>
+              )}
+            </section>
           </div>
         </article>
 
-        {/* Right Column: Pricing & Booking */}
         <aside className="w-full lg:w-[450px] p-8 lg:p-12 bg-[#fcfcfc] lg:sticky lg:top-[65px] h-fit">
           <div className="space-y-8">
             <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-gray-400">
               Service Menu
             </h3>
 
-            {/* Video Call Card */}
             <div className="bg-white border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all group">
               <div className="flex justify-between items-start mb-4">
                 <div className="p-3 bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
@@ -292,7 +438,6 @@ const MentorDetails = () => {
               </button>
             </div>
 
-            {/* Audio Call Card */}
             <div className="bg-white border-2 border-black p-6 shadow-[6px_6px_0px_0px_rgba(37,99,235,1)] transition-all group">
               <div className="flex justify-between items-start mb-4">
                 <div className="p-3 bg-gray-50 text-black group-hover:bg-black group-hover:text-white transition-colors">
@@ -316,7 +461,6 @@ const MentorDetails = () => {
               </button>
             </div>
 
-            {/* Verification Badge */}
             <div className="border-2 border-dashed border-gray-200 p-6 flex items-start gap-4">
               <ShieldCheck className="text-blue-600 shrink-0" size={24} />
               <div>
@@ -332,55 +476,6 @@ const MentorDetails = () => {
           </div>
         </aside>
       </div>
-
-      {availableDates?.map((date) => (
-        <span key={date}>
-          <button onClick={() => getSlots(date)} key={date}>
-            {date}
-          </button>{" "}
-        </span>
-      ))}
-
-      {slots &&
-        (slots.length > 0 ? (
-          <>
-            {slots.map((slot) => (
-              <div key={slot.startTime}>
-                {/* <p>Start Time: {slot.startTime}</p>
-          <p>End Time: {slot.endTime}</p> */}
-
-                <button
-                  onClick={() => setSlot(slot.startTime, slot.endTime)}
-                >{`${slot.startTime} ${slot.endTime}`}</button>
-              </div>
-            ))}
-            <select
-              value={sessionType ?? ""}
-              onChange={(e) => setSessionType(e.target.value)}
-            >
-              {mentor.consultationTypes.video && (
-                <option value="video">Video Consultation</option>
-              )}
-              {mentor.consultationTypes.audio && (
-                <option value="audio">Audio Strategy</option>
-              )}
-            </select>
-
-            <br />
-
-            <input type="checkbox" id="terms" />
-            <label htmlFor="terms">
-              By confirming, you agree that this booking is final and
-              non-refundable.
-            </label>
-
-            <br />
-
-            <button onClick={confirmBooking}>Confirm</button>
-          </>
-        ) : (
-          <p>No slots available</p>
-        ))}
     </div>
   );
 };
