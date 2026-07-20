@@ -2,6 +2,7 @@
 
 import CallChat from "@/components/chat/CallChat";
 import IncomingCall from "@/components/modals/IncomingCall";
+import ReviewModal from "@/components/modals/ReviewModal";
 import useMessages from "@/hooks/useMessages";
 import { socket } from "@/services/socket";
 import { getUser } from "@/utils/auth";
@@ -12,6 +13,9 @@ const BookingDetails = () => {
   const { bookingId } = useParams();
 
   const [incomingCall, setIncomingCall] = useState(false);
+  const [openLeaveReviewModal, setOpenLeaveReviewModal] = useState(false);
+  const [openViewReviewModal, setOpenViewReviewModal] = useState(false);
+  const [isReviewed, setIsReviewed] = useState(false);
 
   const user = getUser();
 
@@ -38,6 +42,12 @@ const BookingDetails = () => {
   };
 
   const { details } = useMessages(id, url);
+
+  useEffect(() => {
+    if (details) {
+      setIsReviewed(details.isReviewed);
+    }
+  }, [details]);
 
   useEffect(() => {
     listenForIncomingCall();
@@ -118,14 +128,28 @@ const BookingDetails = () => {
           )}
 
           {details?.sessionStatus === "completed" && (
-            <button>
-              {details.isReviewed ? "View Review" : "Leave Review"}
+            <button
+              onClick={() =>
+                isReviewed
+                  ? setOpenViewReviewModal(true)
+                  : setOpenLeaveReviewModal(true)
+              }
+            >
+              {isReviewed ? "View Review" : "Leave Review"}
             </button>
           )}
         </aside>
 
         <CallChat id={id} url={url} />
       </div>
+
+      {openLeaveReviewModal && (
+        <ReviewModal
+          setIsReviewed={(flag: boolean) => setIsReviewed(flag)}
+          onClose={() => setOpenLeaveReviewModal(false)}
+          bookingId={id}
+        />
+      )}
     </div>
   );
 };
