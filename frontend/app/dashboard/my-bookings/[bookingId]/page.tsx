@@ -66,7 +66,6 @@ const BookingDetails = () => {
       </header>
 
       <div className="flex flex-col lg:flex-row gap-10 items-start">
-        {/* Booking Details */}
         <aside className="w-full lg:w-[360px] lg:sticky lg:top-6 space-y-6 shrink-0">
           <h2 className="text-sm font-black uppercase tracking-widest text-gray-400 border-b border-gray-100 pb-2">
             Booking Details

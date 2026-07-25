@@ -304,6 +304,17 @@ export const deleteReview = asyncHandler(
         { session: dbSession },
       );
 
+      await Booking.findByIdAndUpdate(
+        bookingId,
+        {
+          $set: {
+            reviewId: null,
+            isReviewed: false,
+          },
+        },
+        { sesion: dbSession },
+      );
+
       const deletedReview = await Review.findOneAndDelete(
         {
           bookingId,
