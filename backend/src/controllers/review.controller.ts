@@ -8,6 +8,9 @@ import { ApiResponse } from "../utils/ApiResponse";
 import mongoose from "mongoose";
 import { Mentor } from "../models/mentor.model";
 
+const REVIEW_WINDOW = 7 * 24 * 60 * 60 * 1000;
+const REVIEW_EDIT_WINDOW = 48 * 60 * 60 * 1000;
+
 export const createReview = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?._id;
@@ -40,8 +43,6 @@ export const createReview = asyncHandler(
         "Reviews can only be submitted after a completed session",
       );
     }
-
-    const REVIEW_WINDOW = 7 * 24 * 60 * 60 * 1000;
 
     const canReview =
       Date.now() - session.completedAt.getTime() < REVIEW_WINDOW;
@@ -167,20 +168,36 @@ export const getReviewByUser = asyncHandler(
   },
 );
 
+export const getAReview = asyncHandler(async (req: Request, res: Response) => {
+  const userId = req.user?._id;
+
+  const { bookingId } = req.query;
+
+  const review = await Review.findOne({ bookingId, userId });
+
+  if (!review) {
+    throw new ApiError(404, "Review not found");
+  }
+
+  const canEdit = Date.now() - review.createdAt.getTime() < REVIEW_EDIT_WINDOW;
+
+  return res
+    .status(200)
+    .json(new ApiResponse("Review fetched", { review, canEdit }));
+});
+
 export const editReview = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?._id;
 
-  const { reviewId } = req.params;
+  const { bookingId } = req.params;
 
   const { rating, review } = req.body;
 
-  const alreadyReviewed = await Review.findOne({ _id: reviewId, userId });
+  const alreadyReviewed = await Review.findOne({ bookingId, userId });
 
   if (!alreadyReviewed) {
     throw new ApiError(404, "Review not found");
   }
-
-  const REVIEW_EDIT_WINDOW = 48 * 60 * 60 * 1000;
 
   const canEdit =
     Date.now() - alreadyReviewed.createdAt.getTime() < REVIEW_EDIT_WINDOW;
@@ -219,8 +236,8 @@ export const editReview = asyncHandler(async (req: Request, res: Response) => {
       { session: dbSession },
     );
 
-    const newReview = await Review.findByIdAndUpdate(
-      reviewId,
+    const newReview = await Review.findOneAndUpdate(
+      { bookingId },
       {
         $set: {
           review,
@@ -251,9 +268,9 @@ export const deleteReview = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?._id;
 
-    const { reviewId } = req.params;
+    const { bookingId } = req.params;
 
-    const review = await Review.findOne({ _id: reviewId, userId });
+    const review = await Review.findOne({ bookingId, userId });
 
     if (!review) {
       throw new ApiError(404, "Review not found");
@@ -289,7 +306,7 @@ export const deleteReview = asyncHandler(
 
       const deletedReview = await Review.findOneAndDelete(
         {
-          _id: reviewId,
+          bookingId,
           userId,
         },
         { session: dbSession },

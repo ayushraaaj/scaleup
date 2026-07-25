@@ -4,6 +4,7 @@ import {
   createReview,
   deleteReview,
   editReview,
+  getAReview,
   getMentorReviews,
   getReviewByUser,
 } from "../controllers/review.controller";
@@ -27,8 +28,10 @@ router
 
 router.route("/my").get(getReviewByUser);
 
+router.route("/view").get(getAReview);
+
 router
-  .route("/:reviewId")
+  .route("/:bookingId")
   .patch(editReviewValidator(), validate, editReview)
   .delete(deleteReviewValidator(), validate, deleteReview);
 

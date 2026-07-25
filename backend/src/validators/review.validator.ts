@@ -34,7 +34,7 @@ export const getMentorReviewsValidator = () => {
 
 export const editReviewValidator = () => {
   return [
-    param("reviewId").isMongoId().withMessage("Invalid review id"),
+    param("bookingId").isMongoId().withMessage("Invalid booking id"),
 
     body("rating")
       .notEmpty()
@@ -55,7 +55,5 @@ export const editReviewValidator = () => {
 };
 
 export const deleteReviewValidator = () => {
-  return [param("reviewId").isMongoId().withMessage("Invalid review id")];
+  return [param("bookingId").isMongoId().withMessage("Invalid booking id")];
 };
-
-

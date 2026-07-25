@@ -148,6 +148,17 @@ const BookingDetails = () => {
           setIsReviewed={(flag: boolean) => setIsReviewed(flag)}
           onClose={() => setOpenLeaveReviewModal(false)}
           bookingId={id}
+          mode="create"
+        />
+      )}
+
+      {openViewReviewModal && (
+        <ReviewModal
+          setIsReviewed={(flag: boolean) => setIsReviewed(flag)}
+          onClose={() => setOpenViewReviewModal(false)}
+          bookingId={id}
+          mode="view"
+          reviewId={details.reviewId}
         />
       )}
     </div>
