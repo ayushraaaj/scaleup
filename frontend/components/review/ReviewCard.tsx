@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import ReviewModal from "../modals/ReviewModal";
 
-const ReviewCard = () => {
+const ReviewCard = (props: any) => {
+  const { showViewButton = true, url } = props;
+
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -14,7 +16,10 @@ const ReviewCard = () => {
 
   const fetchReviews = async () => {
     try {
-      const res = await api.get("/review/my");
+      const res = await api.get(url);
+
+      console.log("URL: ", url);
+      console.log("RESPONSE: ", res.data);
 
       setReviews(res.data.data);
     } catch (error: any) {
@@ -47,60 +52,73 @@ const ReviewCard = () => {
           No reviews yet.
         </div>
       ) : (
-        reviews.map((review: any) => (
-          <div
-            key={review._id}
-            className="rounded-xl border bg-white p-5 shadow-sm"
-          >
-            {/* Header */}
-            <div className="flex justify-between">
-              <div>
-                <h2 className="text-lg font-semibold">
-                  {review.mentorId.userId.fullname}
-                </h2>
+        reviews.map((review: any) => {
+          const r = review.mentorId?.userId ?? review.userId;
+
+          return (
+            <div
+              key={review._id}
+              className="rounded-xl border bg-white p-5 shadow-sm"
+            >
+              {/* Header */}
+              <div className="flex justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold">
+                    {r.fullname}
+                  </h2>
+
+                  <p className="text-sm text-gray-500">
+                    @
+                    {r.username}
+                  </p>
+                </div>
 
                 <p className="text-sm text-gray-500">
-                  @{review.mentorId.userId.username}
+                  {new Date(review.createdAt).toLocaleDateString()}
                 </p>
               </div>
 
-              <p className="text-sm text-gray-500">
-                {new Date(review.createdAt).toLocaleDateString()}
-              </p>
-            </div>
+              {/* Rating */}
+              <div className="mt-4 flex gap-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    size={18}
+                    className={
+                      star <= review.rating
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
+                    }
+                  />
+                ))}
+              </div>
 
-            {/* Rating */}
-            <div className="mt-4 flex gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  size={18}
-                  className={
-                    star <= review.rating
-                      ? "fill-yellow-400 text-yellow-400"
-                      : "text-gray-300"
-                  }
-                />
-              ))}
-            </div>
-
-            {/* Review Preview */}
-            <p className="mt-4 line-clamp-2 text-gray-700">{review.review}</p>
-
-            {/* Footer */}
-            <div className="mt-6 flex justify-end">
-              <button
-                className="rounded-lg bg-blue-600 px-4 py-2 text-white"
-                onClick={() => {
-                  setSelectedReview(review);
-                  setOpenReviewModal(true);
-                }}
+              {/* Review Preview */}
+              <p
+                className={`mt-4 text-gray-700 whitespace-pre-wrap break-words ${
+                  showViewButton ? "line-clamp-2" : ""
+                }`}
               >
-                View Review
-              </button>
+                {review.review}
+              </p>
+
+              {/* Footer */}
+              {showViewButton && (
+                <div className="mt-6 flex justify-end">
+                  <button
+                    className="rounded-lg bg-blue-600 px-4 py-2 text-white"
+                    onClick={() => {
+                      setSelectedReview(review);
+                      setOpenReviewModal(true);
+                    }}
+                  >
+                    View Review
+                  </button>
+                </div>
+              )}
             </div>
-          </div>
-        ))
+          );
+        })
       )}
 
       {openReviewModal && selectedReview && (

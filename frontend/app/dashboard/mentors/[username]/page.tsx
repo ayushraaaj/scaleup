@@ -15,6 +15,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import ReviewCard from "@/components/review/ReviewCard";
 
 interface MentorData {
   _id: string;
@@ -475,6 +476,13 @@ const MentorDetails = () => {
             </div>
           </div>
         </aside>
+      </div>
+
+      <div className="mx-auto max-w-5xl px-8 py-12">
+        <ReviewCard
+          url={`/review/mentor/${mentor._id}`}
+          showViewButton={false}
+        />
       </div>
     </div>
   );
