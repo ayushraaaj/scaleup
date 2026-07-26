@@ -1,7 +1,9 @@
+import ReviewCard from "@/components/review/ReviewCard";
+
 const MyReviews = () => {
   return (
     <div>
-      <h1>My Reviews</h1>
+      <ReviewCard />
     </div>
   );
 };
