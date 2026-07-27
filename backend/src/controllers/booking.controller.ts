@@ -4,6 +4,7 @@ import { Mentor } from "../models/mentor.model";
 import { ApiError } from "../utils/ApiError";
 import { Booking } from "../models/booking.model";
 import { ApiResponse } from "../utils/ApiResponse";
+import NotificationService from "../services/notification.service";
 
 export const createBooking = asyncHandler(
   async (req: Request, res: Response) => {
@@ -69,6 +70,13 @@ export const createBooking = asyncHandler(
       status: "confirmed",
       // status: "pending",
       expiresAt,
+    });
+
+    console.log("Notification called in booking");
+
+    await NotificationService.createBookingNotification({
+      recipientId: mentor.userId,
+      bookingId: booking._id,
     });
 
     return res.status(201).json(new ApiResponse("Slot reserved", booking));

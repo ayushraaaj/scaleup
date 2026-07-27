@@ -12,16 +12,18 @@ const reviewSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "mentors",
       required: true,
+      index: true,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "users",
       required: true,
-      min: 1,
-      max: 5,
+      index: true,
     },
     rating: {
       type: Number,
+      min: 1,
+      max: 5,
       required: true,
     },
     review: {
@@ -32,8 +34,5 @@ const reviewSchema = new mongoose.Schema(
   },
   { timestamps: true },
 );
-
-reviewSchema.index({ mentorId: 1 });
-reviewSchema.index({ userId: 1 });
 
 export const Review = mongoose.model("reviews", reviewSchema);
