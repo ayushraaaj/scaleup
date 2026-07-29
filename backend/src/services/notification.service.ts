@@ -9,7 +9,6 @@ class NotificationService {
     recipientId: mongoose.Types.ObjectId;
     bookingId: mongoose.Types.ObjectId;
   }) {
-    console.log("Notification called");
     return await Notification.create({ recipientId, bookingId });
   }
 }

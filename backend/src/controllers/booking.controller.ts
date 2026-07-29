@@ -72,8 +72,6 @@ export const createBooking = asyncHandler(
       expiresAt,
     });
 
-    console.log("Notification called in booking");
-
     await NotificationService.createBookingNotification({
       recipientId: mentor.userId,
       bookingId: booking._id,
