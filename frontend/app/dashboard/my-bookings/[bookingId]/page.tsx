@@ -3,7 +3,7 @@
 import CallChat from "@/components/chat/CallChat";
 import IncomingCall from "@/components/modals/IncomingCall";
 import ReviewModal from "@/components/modals/ReviewModal";
-import useMessages from "@/hooks/useMessages";
+import useMessages from "@/hooks/message/useMessages";
 import { socket } from "@/services/socket";
 import { getUser } from "@/utils/auth";
 import { useParams } from "next/navigation";

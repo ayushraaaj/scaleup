@@ -1,7 +1,7 @@
 "use client";
 
 import CallChat from "@/components/chat/CallChat";
-import useMessages from "@/hooks/useMessages";
+import useMessages from "@/hooks/message/useMessages";
 import { socket } from "@/services/socket";
 import { getUser } from "@/utils/auth";
 import { useParams, useRouter } from "next/navigation";

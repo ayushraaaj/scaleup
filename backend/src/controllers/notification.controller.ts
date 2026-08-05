@@ -53,12 +53,27 @@ export const readAllNotifications = asyncHandler(
       },
     );
 
-    return res
-      .status(200)
-      .json(
-        new ApiResponse("Notifications marked as read", {
-          modifiedCount: notifications.modifiedCount,
-        }),
-      );
+    return res.status(200).json(
+      new ApiResponse("Notifications marked as read", {
+        modifiedCount: notifications.modifiedCount,
+      }),
+    );
+  },
+);
+
+export const unreadNotificationsCount = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user?._id;
+
+    const unreadNotifications = await Notification.countDocuments({
+      recipientId: userId,
+      isRead: false,
+    });
+
+    return res.status(200).json(
+      new ApiResponse("Unread notifications count", {
+        unreadCount: unreadNotifications,
+      }),
+    );
   },
 );

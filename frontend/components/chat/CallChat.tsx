@@ -1,4 +1,4 @@
-import useMessages from "@/hooks/useMessages";
+import useMessages from "@/hooks/message/useMessages";
 import { socket } from "@/services/socket";
 import { getUser } from "@/utils/auth";
 import { Paperclip } from "lucide-react";
