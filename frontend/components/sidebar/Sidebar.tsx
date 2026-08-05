@@ -22,7 +22,7 @@ import { useState } from "react";
 const Sidebar = () => {
   const user = getUser();
 
-  const [mentorDashboardOpen, setMentorDashboardOpen] = useState(true);
+  const [mentorDashboardOpen, setMentorDashboardOpen] = useState(false);
 
   return (
     <aside className="w-64 h-screen border-r border-gray-200 bg-[#fcfcfc] flex shrink-0 flex-col justify-between p-6">

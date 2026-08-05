@@ -7,6 +7,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   notificationsAllowed: boolean;
+  unreadNotificationCount: number;
   isEmailVerified: boolean;
 
   emailVerificationToken?: string;

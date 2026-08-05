@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { asyncHandler } from "../utils/asyncHandler";
 import { Notification } from "../models/notification.model";
 import { ApiResponse } from "../utils/ApiResponse";
+import { User } from "../models/user.model";
+import { ApiError } from "../utils/ApiError";
 
 export const getAllNotifcations = asyncHandler(
   async (req: Request, res: Response) => {
@@ -11,7 +13,7 @@ export const getAllNotifcations = asyncHandler(
     const limit = Number(req.query.limit) || 5;
     const skip = (page - 1) * limit;
 
-    const [notifications, totalNotifications, unreadNotifications] =
+    const [notifications, totalNotificationCount, unreadNotificationCount] =
       await Promise.all([
         Notification.find({ recipientId: userId })
           .populate({
@@ -24,14 +26,16 @@ export const getAllNotifcations = asyncHandler(
 
         Notification.countDocuments({ recipientId: userId }),
 
-        Notification.countDocuments({ recipientId: userId, isRead: false }),
+        // Notification.countDocuments({ recipientId: userId, isRead: false }),
+
+        User.findById(userId).select("unreadNotificationCount"),
       ]);
 
     return res.status(200).json(
       new ApiResponse("Notifications fetched", {
         notifications,
-        totalNotifications,
-        unreadNotifications,
+        totalNotificationCount,
+        unreadNotificationCount,
       }),
     );
   },
@@ -65,14 +69,15 @@ export const unreadNotificationsCount = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?._id;
 
-    const unreadNotifications = await Notification.countDocuments({
-      recipientId: userId,
-      isRead: false,
-    });
+    const user = await User.findById(userId);
+
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
 
     return res.status(200).json(
       new ApiResponse("Unread notifications count", {
-        unreadCount: unreadNotifications,
+        unreadCount: user.unreadNotificationCount,
       }),
     );
   },
