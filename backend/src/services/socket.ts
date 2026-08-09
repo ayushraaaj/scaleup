@@ -34,9 +34,33 @@ export const initializeSocket = (server: any) => {
   });
 
   io.on("connection", (socket) => {
+    const userId = socket.user?._id;
+
     console.log("Socket connected: ", socket.id);
 
-    socket.on("join-room", (bookingId) => {
+    socket.on("join-room", async (bookingId) => {
+      // console.log("User:", userId);
+      // console.log("Requested booking:", bookingId);
+
+      const booking: any = await Booking.findById(bookingId).populate(
+        "mentorId",
+        "userId",
+      );
+
+      if (!booking) {
+        return;
+      }
+
+      const isUser = booking.userId.toString() === userId.toString();
+
+      const isMentor = booking.mentorId.userId.toString() === userId.toString();
+
+      if (!isUser && !isMentor) {
+        socket.emit("join-room-error", {
+          message: "You are not authorized to access this booking",
+        });
+      }
+
       socket.join(bookingId);
 
       console.log(`Socket ${socket.id} joined room ${bookingId}`);
@@ -204,11 +228,9 @@ export const initializeSocket = (server: any) => {
 
     // Notifications
 
-    socket.join(socket.user?._id);
+    socket.join(userId);
 
-    console.log(
-      `Socket ${socket.id} joined notification room ${socket.user?._id}`,
-    );
+    console.log(`Socket ${socket.id} joined notification room ${userId}`);
   });
 };
 

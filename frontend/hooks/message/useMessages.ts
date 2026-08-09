@@ -79,14 +79,6 @@ const useMessages = (id: string, url: string) => {
     });
   };
 
-  const disconnectSocket = () => {
-    socket.off("connect");
-    socket.off("disconnect");
-    socket.off("receive-message");
-
-    socket.disconnect();
-  };
-
   const joinRoom = () => {
     socket.emit("join-room", id);
   };
@@ -106,6 +98,12 @@ const useMessages = (id: string, url: string) => {
       setTimeout(() => {
         setTyping("");
       }, 2000);
+    });
+  };
+
+  const listenForJoinRoomError = () => {
+    socket.on("join-room-error", ({ message }) => {
+      toast.error(message);
     });
   };
 
@@ -134,10 +132,17 @@ const useMessages = (id: string, url: string) => {
 
     listenForTyping();
 
+    listenForJoinRoomError();
+
     // listenForDeliveredMessage();
 
     return () => {
-      disconnectSocket();
+      socket.off("connect");
+      socket.off("disconnect");
+      socket.off("receive-message");
+      socket.off("join-room-error");
+
+      socket.disconnect();
     };
   }, []);
 
