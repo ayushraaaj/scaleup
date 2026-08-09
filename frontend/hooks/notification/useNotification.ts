@@ -1,13 +1,10 @@
 "use client";
 import { api } from "@/services/axios";
-import { socket } from "@/services/socket";
-import { getUser } from "@/utils/auth";
+import { connectSocket, socket } from "@/services/socket";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
 const useNotification = () => {
-  const user = getUser();
-
   const [unreadCount, setUnreadCount] = useState(0);
 
   const fetchUnreadCount = async () => {
@@ -26,22 +23,14 @@ const useNotification = () => {
     });
   };
 
-  const handleConnect = () => {
-    console.log("Connected:", socket.id);
-    socket.emit("join-user-room", user?._id);
-  };
-
   useEffect(() => {
     fetchUnreadCount();
 
-    socket.on("connect", handleConnect);
-
-    socket.connect();
-
     listenForNotifications();
 
+    connectSocket();
+
     return () => {
-      socket.off("connect", handleConnect);
       socket.off("new-booking-notification");
     };
   }, []);

@@ -6,6 +6,12 @@ import { ACCESS_TOKEN_SECRET } from "../config/env";
 import { User } from "../models/user.model";
 import { Mentor } from "../models/mentor.model";
 
+export const getDecodedToken = (token: string) => {
+  const decodedToken = jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayload;
+
+  return decodedToken;
+};
+
 export const verifyJWT = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
@@ -17,7 +23,7 @@ export const verifyJWT = asyncHandler(
     const token = authHeader.split(" ")[1];
 
     try {
-      const decodedToken = jwt.verify(token, ACCESS_TOKEN_SECRET) as JwtPayload;
+      const decodedToken = getDecodedToken(token);
 
       // const user = await User.findById(decodedToken._id);
       // if (!user) {

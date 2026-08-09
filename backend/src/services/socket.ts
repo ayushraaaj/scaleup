@@ -2,6 +2,8 @@ import { Server } from "socket.io";
 import { CLIENT_URL } from "../config/env";
 import { Session } from "../models/session.model";
 import { Booking } from "../models/booking.model";
+import { ApiError } from "../utils/ApiError";
+import { getDecodedToken } from "../middlewares/auth.middleware";
 
 let io: Server;
 
@@ -11,6 +13,24 @@ export const initializeSocket = (server: any) => {
       origin: CLIENT_URL,
       credentials: true,
     },
+  });
+
+  io.use((socket, next) => {
+    try {
+      const token = socket.handshake.auth.token;
+
+      if (!token) {
+        return next(new Error("Unauthorized request"));
+      }
+
+      const decodedToken = getDecodedToken(token);
+
+      socket.user = decodedToken;
+
+      return next();
+    } catch (error) {
+      return next(new Error("Invalid access token"));
+    }
   });
 
   io.on("connection", (socket) => {
@@ -184,11 +204,11 @@ export const initializeSocket = (server: any) => {
 
     // Notifications
 
-    socket.on("join-user-room", (userId) => {
-      socket.join(userId);
+    socket.join(socket.user?._id);
 
-      console.log(`Socket ${socket.id} joined notification room ${userId}`);
-    });
+    console.log(
+      `Socket ${socket.id} joined notification room ${socket.user?._id}`,
+    );
   });
 };
 
