@@ -181,6 +181,14 @@ export const initializeSocket = (server: any) => {
     socket.on("rejoin-call", ({ id, fullname }) => {
       socket.to(id).emit("participant-rejoined", { fullname });
     });
+
+    // Notifications
+
+    socket.on("join-user-room", (userId) => {
+      socket.join(userId);
+
+      console.log(`Socket ${socket.id} joined notification room ${userId}`);
+    });
   });
 };
 

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { Notification } from "../models/notification.model";
 import { User } from "../models/user.model";
+import { getIO } from "./socket";
 
 class NotificationService {
   async createBookingNotification({
@@ -22,15 +23,21 @@ class NotificationService {
 
       await notification.save({ session: dbSession });
 
-      await User.findByIdAndUpdate(
+      const user = await User.findByIdAndUpdate(
         recipientId,
         {
           $inc: {
             unreadNotificationCount: 1,
           },
         },
-        { session: dbSession },
+        { session: dbSession, returnDocument: "after" },
       );
+
+      const io = getIO();
+
+      io.to(`${recipientId}`).emit("new-booking-notification", {
+        unreadCount: user?.unreadNotificationCount,
+      });
 
       await dbSession.commitTransaction();
     } catch (error) {
