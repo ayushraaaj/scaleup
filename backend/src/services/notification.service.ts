@@ -33,13 +33,27 @@ class NotificationService {
         { session: dbSession, returnDocument: "after" },
       );
 
+      await dbSession.commitTransaction();
+
+      const populatedNotification = await Notification.findById(
+        notification._id,
+      ).populate({
+        path: "bookingId",
+        populate: {
+          path: "userId",
+          select: "fullname username",
+        },
+      });
+
       const io = getIO();
 
       io.to(`${recipientId}`).emit("new-booking-notification", {
         unreadCount: user?.unreadNotificationCount,
       });
 
-      await dbSession.commitTransaction();
+      io.to(`${recipientId}`).emit("new-detail-notification", {
+        newNotification: populatedNotification,
+      });
     } catch (error) {
       await dbSession.abortTransaction();
 

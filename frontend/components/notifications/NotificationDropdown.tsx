@@ -1,6 +1,7 @@
 "use client";
 
 import { api } from "@/services/axios";
+import { connectSocket, socket } from "@/services/socket";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -50,47 +51,68 @@ const NotificationDropdown = () => {
     }
   };
 
+  const handleNewNotification = ({ newNotification }: any) => {
+    setNotifications((prev: any) => [newNotification, ...prev]);
+  };
+
+  const listenForNotifications = () => {
+    socket.on("new-detail-notification", handleNewNotification);
+  };
+
   useEffect(() => {
     fetchNotifications();
   }, [page]);
 
+  useEffect(() => {
+    listenForNotifications();
+
+    return () => {
+      socket.off("new-detail-notification", handleNewNotification);
+    };
+  }, []);
+
   return (
     <div className="flex h-full flex-col">
-      <div className="border-b p-4">
+      <div className="border-b px-4 py-3">
         <h2 className="text-lg font-semibold">Notifications</h2>
       </div>
 
-      {loading && <p>Loading...</p>}
+      {loading && <p className="p-4">Loading...</p>}
 
-      {!loading && notifications.length === 0 && <p>No notifications</p>}
+      {!loading && notifications.length === 0 && (
+        <p className="p-4">No notifications</p>
+      )}
 
-      <div>
-        <div className="flex-1 overflow-y-auto">
-          {notifications.map((notification: any) => (
-            <div key={notification._id} className="border-b px-4 py-3">
-              <p>
-                {notification.bookingId.userId.fullname} booked a consultation
-                with you
-              </p>
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {notifications.map((notification: any) => (
+          <div
+            key={notification._id}
+            className={`border-b px-4 py-3 ${
+              !notification.isRead ? "bg-gray-200" : "bg-white"
+            }`}
+          >
+            <p>
+              {notification.bookingId.userId.fullname} booked a consultation
+              with you
+            </p>
 
-              <p className="text-sm text-gray-500">
-                {new Date(notification.createdAt).toLocaleString()}
-              </p>
-            </div>
-          ))}
-        </div>
-
-        {hasMore && (
-          <div className="border-t p-2">
-            <button
-              onClick={() => setPage((prev) => prev + 1)}
-              className="w-full py-2 cursor-pointer"
-            >
-              Load more
-            </button>
+            <p className="text-sm text-gray-500">
+              {new Date(notification.createdAt).toLocaleString()}
+            </p>
           </div>
-        )}
+        ))}
       </div>
+
+      {hasMore && (
+        <div className="shrink-0 p-2">
+          <button
+            onClick={() => setPage((prev) => prev + 1)}
+            className="w-full cursor-pointer py-1"
+          >
+            Load more
+          </button>
+        </div>
+      )}
     </div>
   );
 };
