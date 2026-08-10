@@ -4,6 +4,7 @@ import { Notification } from "../models/notification.model";
 import { ApiResponse } from "../utils/ApiResponse";
 import { User } from "../models/user.model";
 import { ApiError } from "../utils/ApiError";
+import mongoose from "mongoose";
 
 export const getAllNotifcations = asyncHandler(
   async (req: Request, res: Response) => {
@@ -45,23 +46,48 @@ export const readAllNotifications = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?._id;
 
-    const notifications = await Notification.updateMany(
-      {
-        recipientId: userId,
-        isRead: false,
-      },
-      {
-        $set: {
-          isRead: true,
-        },
-      },
-    );
+    const dbSession = await mongoose.startSession();
 
-    return res.status(200).json(
-      new ApiResponse("Notifications marked as read", {
-        modifiedCount: notifications.modifiedCount,
-      }),
-    );
+    try {
+      dbSession.startTransaction();
+
+      const notifications = await Notification.updateMany(
+        {
+          recipientId: userId,
+          isRead: false,
+        },
+        {
+          $set: {
+            isRead: true,
+          },
+        },
+        { session: dbSession },
+      );
+
+      await User.findByIdAndUpdate(
+        userId,
+        {
+          $inc: {
+            unreadNotificationCount: -notifications.modifiedCount,
+          },
+        },
+        { session: dbSession },
+      );
+
+      await dbSession.commitTransaction();
+
+      return res.status(200).json(
+        new ApiResponse("Notifications marked as read", {
+          modifiedCount: notifications.modifiedCount,
+        }),
+      );
+    } catch (error) {
+      await dbSession.abortTransaction();
+
+      throw error;
+    } finally {
+      await dbSession.endSession();
+    }
   },
 );
 
