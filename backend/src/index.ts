@@ -5,6 +5,7 @@ import connectDB from "./db/db";
 import http from "http";
 import { initializeSocket } from "./services/socket";
 import { startSessionCleanup } from "./jobs/sessionCleanup";
+import "./config/redis";
 
 dotenv.config({ path: "./.env" });
 
