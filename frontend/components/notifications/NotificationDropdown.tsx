@@ -77,8 +77,6 @@ const NotificationDropdown = () => {
         <h2 className="text-lg font-semibold">Notifications</h2>
       </div>
 
-      {loading && <p className="p-4">Loading...</p>}
-
       {!loading && notifications.length === 0 && (
         <p className="p-4">No notifications</p>
       )}
@@ -103,7 +101,9 @@ const NotificationDropdown = () => {
         ))}
       </div>
 
-      {hasMore && (
+      {loading && <p className="p-4">Loading...</p>}
+
+      {hasMore && !loading && (
         <div className="shrink-0 p-2">
           <button
             onClick={() => setPage((prev) => prev + 1)}

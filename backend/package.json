@@ -11,6 +11,7 @@
   "author": "Ayush Raj",
   "license": "ISC",
   "dependencies": {
+    "@getbrevo/brevo": "^6.0.3",
     "@tiptap/core": "^3.22.3",
     "@tiptap/starter-kit": "^3.22.3",
     "bcryptjs": "^3.0.3",
