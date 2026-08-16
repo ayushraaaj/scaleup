@@ -1,7 +1,7 @@
 "use client";
 
 import { api } from "@/services/axios";
-import { connectSocket, socket } from "@/services/socket";
+import { socket } from "@/services/socket";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 

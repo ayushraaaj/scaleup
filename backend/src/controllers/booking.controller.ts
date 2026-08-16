@@ -5,14 +5,22 @@ import { ApiError } from "../utils/ApiError";
 import { Booking } from "../models/booking.model";
 import { ApiResponse } from "../utils/ApiResponse";
 import NotificationService from "../services/notification.service";
+import { addEmailJob } from "../queues/email.queue";
 
 export const createBooking = asyncHandler(
   async (req: Request, res: Response) => {
     const userId = req.user?._id;
+    const userEmail = req.user?.email;
+    const userUsername = req.user?.username;
+    const userFullname = req.user?.fullname;
+
     const { mentorId } = req.params;
     const { sessionType, date, startTime, endTime } = req.body;
 
-    const mentor = await Mentor.findById({ _id: mentorId });
+    const mentor: any = await Mentor.findById({ _id: mentorId }).populate(
+      "userId",
+      "fullname username",
+    );
 
     if (!mentor) {
       throw new ApiError(404, "Mentor not found");
@@ -22,14 +30,14 @@ export const createBooking = asyncHandler(
       throw new ApiError(400, "Mentor is not available");
     }
 
-    const availability = mentor.availability.find((a) => a.date === date);
+    const availability = mentor.availability.find((a: any) => a.date === date);
 
     if (!availability) {
       throw new ApiError(400, "Mentor not available on this day");
     }
 
     const isWithinSlot = availability.slots.some(
-      (slot) => slot.startTime <= startTime && slot.endTime >= endTime,
+      (slot: any) => slot.startTime <= startTime && slot.endTime >= endTime,
     );
 
     if (!isWithinSlot) {
@@ -73,8 +81,24 @@ export const createBooking = asyncHandler(
     });
 
     await NotificationService.createBookingNotification({
-      recipientId: mentor.userId,
+      recipientId: mentor.userId._id,
       bookingId: booking._id,
+    });
+
+    await addEmailJob({
+      recipientEmail: userEmail,
+      recipientUsername: userUsername,
+      recipientFullname: userFullname,
+
+      mentorUsername: mentor.userId.username,
+      mentorFullname: mentor.userId.fullname,
+
+      bookingId: booking._id.toString(),
+      date: booking.date,
+      startTime: booking.startTime,
+      endTime: booking.endTime,
+      sessionType: booking.sessionType,
+      totalPrice: booking.totalPrice,
     });
 
     return res.status(201).json(new ApiResponse("Slot reserved", booking));

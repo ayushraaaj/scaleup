@@ -10,13 +10,22 @@ export const emailWorker = new Worker(
     if (job.name === "booking-confirmation") {
       await sendBookingConfirmationEmail({
         recipientEmail: job.data.recipientEmail,
-        recipientName: job.data.recipientName,
-        mentorName: job.data.mentorName,
+        recipientUsername: job.data.recipientUsername,
+        recipientFullname: job.data.recipientFullname,
+        mentorUsername: job.data.mentorUsername,
+        mentorFullname: job.data.mentorFullname,
+        bookingId: job.data.bookingId,
+        date: job.data.date,
+        startTime: job.data.startTime,
+        endTime: job.data.endTime,
+        sessionType: job.data.sessionType,
+        totalPrice: job.data.totalPrice,
       });
     }
   },
   {
     connection: redis,
+    concurrency: 1,
   },
 );
 

@@ -1,5 +1,10 @@
 import { BrevoClient } from "@getbrevo/brevo";
-import { BREVO_API_KEY, EMAIL_FROM, EMAIL_FROM_NAME } from "../config/env";
+import {
+  BREVO_API_KEY,
+  CLIENT_URL,
+  EMAIL_FROM,
+  EMAIL_FROM_NAME,
+} from "../config/env";
 import { render } from "react-email";
 import BookingConfirmation from "../emails/BookingConfirmation";
 import React from "react";
@@ -10,17 +15,42 @@ export const brevo = new BrevoClient({
 
 export const sendBookingConfirmationEmail = async ({
   recipientEmail,
-  recipientName,
-  mentorName,
+  recipientUsername,
+  recipientFullname,
+  mentorUsername,
+  mentorFullname,
+  bookingId,
+  date,
+  startTime,
+  endTime,
+  sessionType,
+  totalPrice,
 }: {
   recipientEmail: string;
-  recipientName: string;
-  mentorName: string;
+  recipientUsername: string;
+  recipientFullname: string;
+  mentorUsername: string;
+  mentorFullname: string;
+  bookingId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  sessionType: string;
+  totalPrice: number;
 }) => {
+  const bookingUrl = `${CLIENT_URL}/dashboard/my-bookings/${bookingId}`;
+
   const emailHtml = await render(
     React.createElement(BookingConfirmation, {
-      username: recipientName,
-      mentorName,
+      recipientFullname,
+      mentorUsername,
+      mentorFullname,
+      date,
+      startTime,
+      endTime,
+      sessionType,
+      totalPrice,
+      bookingUrl,
     }),
   );
 
@@ -31,7 +61,7 @@ export const sendBookingConfirmationEmail = async ({
     },
     to: [
       {
-        name: recipientName,
+        name: recipientFullname,
         email: recipientEmail,
       },
     ],
