@@ -6,10 +6,10 @@ export const emailQueue = new Queue("email", {
 });
 
 export const addEmailJob = async () => {
-  await emailQueue.add("send-email", {
-    to: "abc",
-    from: "xyz",
-    message: "Hello",
+  await emailQueue.add("booking-confirmation", {
+    recipientEmail: "it.2002830@gmail.com",
+    recipientName: "Tanshu",
+    mentorName: "Ayush",
   });
 
   console.log("Email job added");
