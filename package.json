@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev:frontend": "cd frontend && npm run dev",
-    "dev:backend": "cd backend && npm run dev"
+    "dev:backend": "cd backend && npm run dev",
+    "worker": "cd backend && npm run worker"
   },
   "author": "Ayush Raj",
   "license": "ISC"

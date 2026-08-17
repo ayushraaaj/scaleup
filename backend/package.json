@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon --watch \"src/**/*.ts\" --exec tsx src/index.ts",
     "start": "node dist/index.js",
-    "build": "tsc"
+    "build": "tsc",
+    "worker": "tsx src/workers/index.ts"
   },
   "author": "Ayush Raj",
   "license": "ISC",

@@ -6,6 +6,8 @@ import { Booking } from "../models/booking.model";
 import { ApiResponse } from "../utils/ApiResponse";
 import NotificationService from "../services/notification.service";
 import { addEmailJob } from "../queues/email.queue";
+import mongoose from "mongoose";
+import { OutboxEvent } from "../models/outboxEvent.model";
 
 export const createBooking = asyncHandler(
   async (req: Request, res: Response) => {
@@ -66,42 +68,86 @@ export const createBooking = asyncHandler(
 
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-    const booking = await Booking.create({
-      mentorId,
-      userId,
-      sessionType,
-      date,
-      startTime,
-      endTime,
-      hourlyRate,
-      totalPrice,
-      status: "confirmed",
-      // status: "pending",
-      expiresAt,
-    });
+    const dbSession = await mongoose.startSession();
 
-    await NotificationService.createBookingNotification({
-      recipientId: mentor.userId._id,
-      bookingId: booking._id,
-    });
+    try {
+      dbSession.startTransaction();
 
-    await addEmailJob({
-      recipientEmail: userEmail,
-      recipientUsername: userUsername,
-      recipientFullname: userFullname,
+      const createdBooking = await Booking.create(
+        [
+          {
+            mentorId,
+            userId,
+            sessionType,
+            date,
+            startTime,
+            endTime,
+            hourlyRate,
+            totalPrice,
+            status: "confirmed",
+            // status: "pending",
+            expiresAt,
+          },
+        ],
+        { session: dbSession },
+      );
 
-      mentorUsername: mentor.userId.username,
-      mentorFullname: mentor.userId.fullname,
+      const booking = createdBooking[0];
 
-      bookingId: booking._id.toString(),
-      date: booking.date,
-      startTime: booking.startTime,
-      endTime: booking.endTime,
-      sessionType: booking.sessionType,
-      totalPrice: booking.totalPrice,
-    });
+      await OutboxEvent.create(
+        [
+          {
+            type: "BOOKING_CONFIRMATION_EMAIL",
+            payload: {
+              recipientEmail: userEmail,
+              recipientUsername: userUsername,
+              recipientFullname: userFullname,
 
-    return res.status(201).json(new ApiResponse("Slot reserved", booking));
+              mentorUsername: mentor.userId.username,
+              mentorFullname: mentor.userId.fullname,
+
+              bookingId: booking._id.toString(),
+              date: booking.date,
+              startTime: booking.startTime,
+              endTime: booking.endTime,
+              sessionType: booking.sessionType,
+              totalPrice: booking.totalPrice,
+            },
+          },
+        ],
+        { session: dbSession },
+      );
+
+      await dbSession.commitTransaction();
+
+      await NotificationService.createBookingNotification({
+        recipientId: mentor.userId._id,
+        bookingId: booking._id,
+      });
+
+      // await addEmailJob({
+      //   recipientEmail: userEmail,
+      //   recipientUsername: userUsername,
+      //   recipientFullname: userFullname,
+
+      //   mentorUsername: mentor.userId.username,
+      //   mentorFullname: mentor.userId.fullname,
+
+      //   bookingId: booking._id.toString(),
+      //   date: booking.date,
+      //   startTime: booking.startTime,
+      //   endTime: booking.endTime,
+      //   sessionType: booking.sessionType,
+      //   totalPrice: booking.totalPrice,
+      // });
+
+      return res.status(201).json(new ApiResponse("Slot reserved", booking));
+    } catch (error) {
+      await dbSession.abortTransaction();
+      throw error;
+    } finally {
+      await dbSession.endSession();
+    }
   },
 );
 

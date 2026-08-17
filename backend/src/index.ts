@@ -6,7 +6,6 @@ import http from "http";
 import { initializeSocket } from "./services/socket";
 import { startSessionCleanup } from "./jobs/sessionCleanup";
 import "./config/redis";
-import "./workers/email.worker";
 
 dotenv.config({ path: "./.env" });
 
