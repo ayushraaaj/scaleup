@@ -22,7 +22,13 @@ const outboxEventSchema = new mongoose.Schema(
     lastError: {
       type: String,
     },
+    processingAt: {
+      type: Date,
+    },
     processedAt: {
+      type: Date,
+    },
+    nextRetryAt: {
       type: Date,
     },
   },
