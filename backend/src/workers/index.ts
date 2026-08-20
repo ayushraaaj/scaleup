@@ -5,6 +5,7 @@ const startWorkers = async () => {
 
   await import("./email.worker.js");
   await import("./outbox.worker.js");
+  await import("./outbox.reconciliation.js");
 };
 
 startWorkers();
