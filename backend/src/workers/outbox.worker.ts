@@ -86,6 +86,27 @@ const processOutboxEvents = async (eventId: mongoose.Types.ObjectId) => {
 
     console.log("Outbox event published:", event._id);
   } catch (error: any) {
+    const isLastAttempt = event.attempts >= MAX_ATTEMPTS;
+
+    if (isLastAttempt) {
+      await OutboxEvent.findByIdAndUpdate(event._id, {
+        $set: {
+          status: "dead",
+          lastError: error.message,
+        },
+        $unset: {
+          processingAt: "",
+          nextRetryAt: "",
+        },
+      });
+
+      console.error(
+        `Outbox event moved to dead state after ${event.attempts} attempts: ${event._id}`,
+      );
+
+      return;
+    }
+
     const retryDelay = RETRY_DELAY * 2 ** (event.attempts - 1);
 
     const nextRetryAt = new Date(Date.now() + retryDelay);

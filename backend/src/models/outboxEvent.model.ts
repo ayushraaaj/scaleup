@@ -12,7 +12,7 @@ const outboxEventSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "processing", "published", "failed"],
+      enum: ["pending", "processing", "published", "failed", "dead"],
       default: "pending",
     },
     attempts: {
