@@ -3,13 +3,19 @@ import connectDB from "../db/db";
 import { stopOutboxWorker } from "./outbox.worker";
 import { closeRedis } from "../config/redis";
 import { stopEmailWorker } from "./email.worker";
+import {
+  startSessionCleanup,
+  stopSessionCleanup,
+} from "../jobs/sessionCleanup";
+import("./outbox.reconciliation.js");
 
 const startWorkers = async () => {
   await connectDB();
 
-  await import("./email.worker.js");
-  await import("./outbox.worker.js");
-  await import("./outbox.reconciliation.js");
+  // await import("./email.worker.js");
+  // await import("./outbox.worker.js");
+
+  startSessionCleanup();
 };
 
 let isShuttingDown = false;
@@ -22,6 +28,8 @@ const shutdown = async (signal: string) => {
   isShuttingDown = true;
 
   console.log(`Shutdown signal received: ${signal}`);
+
+  stopSessionCleanup();
 
   await stopEmailWorker();
 

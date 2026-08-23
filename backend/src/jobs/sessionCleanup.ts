@@ -1,41 +1,74 @@
-import cron from "node-cron";
+import "../models/booking.model";
+import cron, { ScheduledTask } from "node-cron";
 import { Session } from "../models/session.model";
-import { getIO } from "../services/socket";
+import { publisher } from "../config/pubsub";
+
+let sessionCleanupJob: ScheduledTask | null = null;
 
 export const startSessionCleanup = () => {
-  cron.schedule("* * * * *", async () => {
-    console.log("Session cleanup cron is running...");
+  if (sessionCleanupJob) {
+    return;
+  }
 
-    const sessions = await Session.find({
-      sessionStatus: {
-        $in: ["ongoing", "end_requested"],
-      },
-    }).populate("bookingId", "date endTime");
+  sessionCleanupJob = cron.schedule("* * * * *", async () => {
+    try {
+      console.log("Session cleanup cron is running...");
 
-    for (const session of sessions) {
-      const booking = session.bookingId as any;
+      const sessions = await Session.find({
+        sessionStatus: {
+          $in: ["ongoing", "end_requested"],
+        },
+      }).populate("bookingId", "date endTime");
 
-      const bookingEndTime = new Date(`${booking.date}T${booking.endTime}:00`);
+      for (const session of sessions) {
+        const booking = session.bookingId as any;
 
-      const currentTime = new Date();
+        const bookingEndTime = new Date(
+          `${booking.date}T${booking.endTime}:00`,
+        );
 
-      if (currentTime >= bookingEndTime) {
-        await Session.findByIdAndUpdate(session._id, {
-          $set: {
-            sessionStatus: "completed",
-            completedAt: new Date(),
-            completionReason: "scheduled_end",
-          },
-        });
+        const currentTime = new Date();
 
-        console.log("Session Expired");
+        if (currentTime >= bookingEndTime) {
+          await Session.findByIdAndUpdate(session._id, {
+            $set: {
+              sessionStatus: "completed",
+              completedAt: new Date(),
+              completionReason: "scheduled_end",
+            },
+          });
 
-        const io = getIO();
+          console.log("Session Expired");
 
-        io.to(booking._id.toString()).emit("call-ended");
-      } else {
-        console.log("Session Still Running");
+          // const io = getIO();
+
+          // io.to(booking._id.toString()).emit("call-ended");
+
+          await publisher.publish(
+            "session-ended",
+            JSON.stringify({
+              bookingId: booking._id.toString(),
+            }),
+          );
+        } else {
+          console.log("Session Still Running");
+        }
       }
+    } catch (error) {
+      console.log("Session cleanup failed: ", error);
     }
   });
+
+  console.log("Session cleanup cron started");
+};
+
+export const stopSessionCleanup = () => {
+  if (!sessionCleanupJob) {
+    return;
+  }
+
+  sessionCleanupJob.stop();
+  sessionCleanupJob = null;
+
+  console.log("Session cleanup cron stopped");
 };
