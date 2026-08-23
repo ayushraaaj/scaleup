@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { OutboxEvent } from "../models/outboxEvent.model";
 import { addEmailJob } from "../queues/email.queue";
+import { ChangeStream } from "mongodb";
 
 const PROCESSING_TIME = 5 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
@@ -126,9 +127,11 @@ const processOutboxEvents = async (eventId: mongoose.Types.ObjectId) => {
   }
 };
 
+let changeStream: ChangeStream | null = null;
+
 const startChangeStream = async () => {
   try {
-    const changeStream = OutboxEvent.watch([
+    changeStream = OutboxEvent.watch([
       {
         $match: {
           operationType: "insert",
@@ -154,7 +157,9 @@ const startChangeStream = async () => {
       console.error("Outbox change stream error: ", error);
 
       try {
-        await changeStream.close();
+        if (changeStream) {
+          await changeStream.close();
+        }
       } catch (closeError) {
         console.error("Error closing change stream: ", closeError);
       }
@@ -165,7 +170,7 @@ const startChangeStream = async () => {
     });
 
     changeStream.on("close", () => {
-      console.log("Outbox change stream closed");
+      console.log("Outbox change stream closed in startChangeStream function");
     });
   } catch (error) {
     console.error("Failed to start outbox change stream: ", error);
@@ -173,6 +178,16 @@ const startChangeStream = async () => {
     setTimeout(() => {
       startChangeStream();
     }, CHANGE_STREAM_RETRY_DELAY);
+  }
+};
+
+export const stopOutboxWorker = async () => {
+  if (changeStream) {
+    await changeStream.close();
+
+    changeStream = null;
+
+    console.log("Outbox change stream closed");
   }
 };
 

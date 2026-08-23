@@ -36,3 +36,9 @@ emailWorker.on("completed", (job) => {
 emailWorker.on("failed", (job, error) => {
   console.error(`Job ${job?.id} failed: `, error);
 });
+
+export const stopEmailWorker = async () => {
+  await emailWorker.close();
+
+  console.log("Email worker closed");
+};
