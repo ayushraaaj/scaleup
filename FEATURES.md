@@ -16,6 +16,8 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - Conduct real-time WebRTC video consultations.
 - Exchange real-time messages and files during active bookings.
 - Prevent double bookings through dynamic availability calculation.
+- Receive real-time notifications for new bookings.
+- Rate and review mentors after completed sessions.
 
 ---
 
@@ -28,6 +30,10 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - Video Consultation
 - Real-Time Chat
 - File Upload
+- Notifications
+- Ratings & Reviews
+- Email Delivery
+- Event-Driven Background Workers
 - Dashboard
 - User Experience
 - Engineering Highlights
@@ -47,6 +53,7 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - ✅ JWT Access Token Authentication
 - ✅ Refresh Token Authentication
 - ✅ Automatic Access Token Refresh
+- ✅ Automatic Session Restoration on Page Load
 - ✅ Secure HTTP-only Refresh Token Cookies
 - ✅ Logout
 
@@ -75,6 +82,8 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - ✅ My Posts
 - ✅ Edit Posts
 - ✅ Delete Posts
+- ✅ Rich Text Editor (Tiptap)
+- ✅ Code Block Highlighting
 
 ---
 
@@ -132,15 +141,15 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - ✅ Video Consultation Booking
 - ✅ Booking Confirmation
 - ✅ My Bookings
+- ✅ Upcoming & Past Bookings Split
+- ✅ Booking Email Notification
 
 ## Booking Protection
 
 - ✅ Dynamic Time Slot Generation
-- ✅ Pending Booking Handling
 - ✅ Slot Reservation
 - ✅ Double Booking Prevention
-- ✅ Race Condition Prevention
-- ✅ Availability Computed From Existing Bookings
+- ✅ Conflict Detection Against Active Bookings
 
 ---
 
@@ -168,6 +177,7 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - ✅ Frontend Timer Based Session End
 - ✅ Cron-Based Session Recovery
 - ✅ Persistent Video Session State
+- ✅ Cross-Process Session End Signaling (Redis Pub/Sub)
 
 ---
 
@@ -177,6 +187,7 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 
 - ✅ Booking Specific Chat
 - ✅ Real-Time Messaging
+- ✅ Typing Indicator
 - ✅ Message Validation
 
 ## File Sharing
@@ -201,6 +212,51 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 
 ---
 
+# Notifications
+
+- ✅ Real-Time Booking Notifications via WebSocket
+- ✅ Unread Notification Count Badge
+- ✅ Notification List with Pagination
+- ✅ Mark All Notifications as Read
+- ✅ Per-User Notification Rooms
+
+---
+
+# Ratings & Reviews
+
+- ✅ Submit Review After Completed Session
+- ✅ Star Rating (1-5)
+- ✅ One Review Per Booking
+- ✅ 7-Day Review Window
+- ✅ 48-Hour Review Edit Window
+- ✅ Edit Review
+- ✅ Delete Review
+- ✅ Mentor Rating Aggregation
+- ✅ Mentor Total Reviews & Completed Sessions Tracking
+
+---
+
+# Email Delivery
+
+- ✅ Booking Confirmation Email (Brevo)
+- ✅ HTML Email Template (React Email)
+- ✅ Transactional Email Sending
+
+---
+
+# Event-Driven Background Workers
+
+- ✅ Transactional Outbox Pattern
+- ✅ Queue-Based Email Jobs (BullMQ)
+- ✅ Change Stream Worker for New Outbox Events
+- ✅ Background Reconciliation Worker
+- ✅ Stale Event Recovery & Crash Recovery
+- ✅ Exponential Backoff Retry for Failed Events
+- ✅ Redis Based Pub/Sub Communication
+- ✅ Separate Worker Process
+
+---
+
 # Dashboard
 
 ## User Dashboard
@@ -208,6 +264,7 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - ✅ Feed
 - ✅ Mentor Listing
 - ✅ My Bookings
+- ✅ My Reviews
 - ✅ Settings
 
 ## Mentor Dashboard
@@ -216,6 +273,7 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - ✅ My Sessions
 - ✅ Profile Details
 - ✅ Availability Management
+- ✅ My Posts
 
 ---
 
@@ -243,14 +301,24 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - ✅ WebRTC Integration
 - ✅ Background Cron Jobs
 - ✅ Session Lifecycle Management
+- ✅ Redis Pub/Sub
+- ✅ BullMQ Queue
 
 ## Booking Architecture
 
 - ✅ Dynamic Availability Calculation
 - ✅ Booking Conflict Detection
-- ✅ Race Condition Handling
 - ✅ Availability and Booking Separation
 - ✅ Automatic Time Slot Generation
+- ✅ Transactional Booking Creation (Mongo Transactions)
+
+## Event-Driven Architecture
+
+- ✅ Transactional Outbox
+- ✅ MongoDB Change Streams
+- ✅ Background Reconciliation
+- ✅ Atomic Event Claiming
+- ✅ Crash Recovery & Retry with Backoff
 
 ## Security
 
@@ -259,6 +327,8 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - ✅ Authorization Middleware
 - ✅ Request Validation
 - ✅ Secure File Uploads
+- ✅ Password Hashing (bcrypt)
+- ✅ Refresh Token Revocation (Server-Side)
 
 ---
 
@@ -272,9 +342,10 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 
 ## Booking
 
-- Bookings temporarily reserve a slot while pending.
+- Bookings reserve a slot at the time of creation.
 - Slot availability is validated before confirming a booking to prevent double booking.
 - Active bookings determine visible availability.
+- Booking creation is wrapped in a Mongo transaction together with the outbox event.
 
 ## Pricing
 
@@ -290,29 +361,34 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - Session state is persisted independently from the booking.
 - Automatic session completion is handled through frontend timers with cron-based recovery.
 
+## Reliability
+
+- Side effects (emails) are written to an outbox in the same transaction as the state change.
+- A dedicated worker process consumes outbox events, guaranteeing delivery even if the API crashes.
+- Session expiry is detected by a cron job in the worker process and bridged to the API via Redis pub/sub.
+
 ---
 
 # Future Enhancements
 
 ## Product Features
 
-- ⏳ Notifications
-- ⏳ Ratings & Reviews
+- ⏳ Landing Page
 - ⏳ Session Notes
 - ⏳ Search & Filtering
 - ⏳ Mentor Analytics
 - ⏳ Calendar Integration
-- ⏳ Email Notifications
 - ⏳ Admin Dashboard
+- ⏳ Email Verification
+- ⏳ Forgot Password / Password Reset
+- ⏳ Pending Booking Flow with Expiry
 
 ## Engineering Improvements
 
-- ⏳ Redis Caching
-- ⏳ Background Workers
-- ⏳ Queue Based Notifications
 - ⏳ Docker
 - ⏳ CI/CD Pipeline
 - ⏳ Monitoring & Logging
+- ⏳ Horizontal Worker Scaling
 
 ---
 
@@ -325,6 +401,8 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - Tailwind CSS
 - Axios
 - Socket.IO Client
+- Tiptap (Rich Text Editor)
+- Lowlight / Highlight.js
 
 ## Backend
 
@@ -335,6 +413,14 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - Mongoose
 - Socket.IO
 - Cloudinary
+- Redis
+- BullMQ
+- Node-Cron
+- Brevo (Transactional Email)
+- React Email
+- bcryptjs
+- express-validator
+- Multer
 
 ---
 
@@ -352,6 +438,10 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - ✅ Video Consultation
 - ✅ Real-Time Chat
 - ✅ File Sharing
+- ✅ Notifications
+- ✅ Ratings & Reviews
+- ✅ Email Delivery
+- ✅ Queue-Based Background Workers
 
 ## In Progress
 
@@ -360,9 +450,14 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 
 ## Planned
 
-- ⏳ Notifications
-- ⏳ Ratings & Reviews
+- ⏳ Landing Page
 - ⏳ Session Notes
 - ⏳ Search & Filtering
+- ⏳ Mentor Analytics
+- ⏳ Calendar Integration
 - ⏳ Admin Dashboard
+- ⏳ Email Verification
+- ⏳ Forgot Password
+- ⏳ Docker
+- ⏳ CI/CD Pipeline
 - ⏳ Production Optimizations

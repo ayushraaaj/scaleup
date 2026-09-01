@@ -26,7 +26,7 @@ ScaleUp brings the entire mentorship experience into a single platform.
 
 Mentors can build professional profiles, define consultation pricing, configure their availability, and conduct online consultation sessions.
 
-Learners can discover mentors, schedule appointments, communicate through integrated messaging, exchange files, and participate in secure real-time video consultations.
+Learners can discover mentors, schedule appointments, communicate through integrated messaging, exchange files, receive real-time notifications, and participate in secure real-time video consultations.
 
 ---
 
@@ -63,6 +63,9 @@ Session Management
  │
  ▼
 Session Completion
+ │
+ ▼
+Review & Rate Mentor
 ```
 
 ---
@@ -77,13 +80,16 @@ Some of the challenges addressed include:
 - Role-Based Authorization
 - Dynamic Mentor Availability
 - Booking Conflict Prevention
-- Race Condition Handling
+- Transactional Booking Creation
+- Transactional Outbox Pattern
 - Real-Time Communication
 - WebRTC Video Consultation
 - Secure File Uploads
 - Modular Backend Architecture
 - Video Session Lifecycle Management
 - Background Recovery Using Cron Jobs
+- Event-Driven Background Workers
+- Cross-Process Communication Using Redis Pub/Sub
 
 ---
 
@@ -96,6 +102,7 @@ Some of the challenges addressed include:
 - Tailwind CSS
 - Axios
 - Socket.IO Client
+- Tiptap (Rich Text Editor)
 
 ## Backend
 
@@ -106,6 +113,11 @@ Some of the challenges addressed include:
 - Mongoose
 - Socket.IO
 - Cloudinary
+- Redis
+- BullMQ
+- Node-Cron
+- Brevo (Transactional Email)
+- React Email
 
 ---
 
@@ -119,26 +131,43 @@ ScaleUp
 │   ├── components
 │   ├── hooks
 │   ├── services
-│   ├── utils
-│   └── types
+│   └── utils
 │
 ├── backend
-│   ├── controllers
-│   ├── middleware
-│   ├── models
-│   ├── routes
-│   ├── sockets
-│   ├── utils
-│   └── services
+│   ├── src
+│   │   ├── controllers
+│   │   ├── middlewares
+│   │   ├── models
+│   │   ├── routers
+│   │   ├── services
+│   │   ├── subscribers
+│   │   ├── workers
+│   │   ├── queues
+│   │   ├── jobs
+│   │   ├── emails
+│   │   ├── validators
+│   │   └── utils
+│   │
+│   └── uploads
 │
 ├── FEATURES.md
-├── ARCHITECTURE.md
-└── API.md
+├── ARCHITECTURE.md (Coming Soon)
+└── API.md (Coming Soon)
 ```
 
 ---
 
 # Getting Started
+
+## Prerequisites
+
+- Node.js
+- MongoDB
+- Redis
+- A Cloudinary account
+- A Brevo account (transactional email)
+
+---
 
 ## Clone the Repository
 
@@ -160,10 +189,39 @@ npm run dev
 
 ## Backend
 
+The backend runs as two separate processes: the API server and the worker process.
+
+### API Server
+
 ```bash
 cd backend
 npm install
 npm run dev
+```
+
+### Worker Process
+
+```bash
+cd backend
+npm run worker
+```
+
+### Or Run Both Together
+
+```bash
+cd backend
+npm run dev:all
+```
+
+---
+
+From the repository root, you can also use:
+
+```bash
+npm run dev:frontend   # Frontend only
+npm run dev:backend    # Backend API only
+npm run worker         # Backend worker only
+npm run dev:all:backend # Backend API + worker
 ```
 
 ---
@@ -172,22 +230,44 @@ npm run dev
 
 Create a `.env` file inside both the frontend and backend projects.
 
-Example backend variables:
+## Frontend
+
+```env
+NEXT_PUBLIC_BACKEND_URL=
+NEXT_PUBLIC_CLIENT_URL=
+```
+
+## Backend
 
 ```env
 PORT=
 
+NODE_ENV=
+
 MONGODB_URI=
 
 ACCESS_TOKEN_SECRET=
+ACCESS_TOKEN_EXPIRY=
 
 REFRESH_TOKEN_SECRET=
+REFRESH_TOKEN_EXPIRY=
+
+CLIENT_URL=
 
 CLOUDINARY_CLOUD_NAME=
-
 CLOUDINARY_API_KEY=
-
 CLOUDINARY_API_SECRET=
+
+REDIS_URL=
+
+BREVO_API_KEY=
+BREVO_SMTP_HOST=
+BREVO_SMTP_PASS=
+BREVO_SMTP_PORT=
+BREVO_SMTP_USER=
+
+EMAIL_FROM=
+EMAIL_FROM_NAME=
 ```
 
 ---
@@ -207,17 +287,14 @@ For more detailed information about the project:
 ## Product
 
 - Landing Page
-- Notifications
-- Ratings & Reviews
-- Session Notes
 - Search & Filtering
+- Session Notes
+- Mentor Analytics
+- Calendar Integration
 - Admin Dashboard
 
 ## Engineering
 
-- Redis Caching
-- Background Workers
-- Queue-Based Notifications
 - Docker
 - CI/CD Pipeline
 - Monitoring & Logging
@@ -249,9 +326,13 @@ Building ScaleUp has provided hands-on experience with several software engineer
 - Dynamic Availability Scheduling
 - Booking Workflow Design
 - Race Condition Prevention
+- MongoDB Transactions
+- Transactional Outbox Pattern
+- Event-Driven Background Workers
+- Redis Pub/Sub
+- Cron-Based Background Jobs
 - Modular Backend Architecture
 - WebRTC Session Lifecycle Management
-- Background Job Scheduling with Cron
 - Designing Recovery Mechanisms for Distributed Systems
 
 ---
