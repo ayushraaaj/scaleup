@@ -8,6 +8,7 @@ import {
 import { render } from "react-email";
 import BookingConfirmation from "../emails/BookingConfirmation";
 import React from "react";
+import { EmailError } from "../utils/EmailError";
 
 export const brevo = new BrevoClient({
   apiKey: BREVO_API_KEY,
@@ -54,18 +55,23 @@ export const sendBookingConfirmationEmail = async ({
     }),
   );
 
-  await brevo.transactionalEmails.sendTransacEmail({
-    sender: {
-      name: EMAIL_FROM_NAME,
-      email: EMAIL_FROM,
-    },
-    to: [
-      {
-        name: recipientFullname,
-        email: recipientEmail,
+  try {
+    await brevo.transactionalEmails.sendTransacEmail({
+      sender: {
+        name: EMAIL_FROM_NAME,
+        email: EMAIL_FROM,
       },
-    ],
-    subject: "Booking Confirmed",
-    htmlContent: emailHtml,
-  });
+      to: [
+        {
+          name: recipientFullname,
+          email: recipientEmail,
+        },
+      ],
+      subject: "Booking Confirmed",
+      htmlContent: emailHtml,
+    });
+  } catch (error: any) {
+    console.log("BREVO ERROR: ", error);
+    throw error;
+  }
 };

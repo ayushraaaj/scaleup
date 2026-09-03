@@ -51,6 +51,9 @@ export const addEmailJob = async ({
         type: "exponential",
         delay: 2000,
       },
+      removeOnFail: {
+        age: 7 * 24 * 60 * 60,
+      },
     },
   );
 

@@ -7,6 +7,8 @@ export const emailWorker = new Worker(
   async (job) => {
     console.log("Processing job: ", job.name);
 
+    // throw new Error("TEST EMAIL WORKER FAILURE");
+
     if (job.name === "booking-confirmation") {
       await sendBookingConfirmationEmail({
         recipientEmail: job.data.recipientEmail,
