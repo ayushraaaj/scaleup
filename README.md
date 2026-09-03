@@ -151,8 +151,8 @@ ScaleUp
 │   └── uploads
 │
 ├── FEATURES.md
-├── ARCHITECTURE.md (Coming Soon)
-└── API.md (Coming Soon)
+├── ARCHITECTURE.md
+└── API.md
 ```
 
 ---
@@ -277,8 +277,8 @@ EMAIL_FROM_NAME=
 For more detailed information about the project:
 
 - 📘 **FEATURES.md** — Complete list of implemented features.
-- 🏗️ **ARCHITECTURE.md** _(Coming Soon)_ — Design decisions and system architecture.
-- 🔗 **API.md** _(Coming Soon)_ — API documentation.
+- 🏗️ **ARCHITECTURE.md** — Design decisions and system architecture.
+- 🔗 **API.md** — API documentation.
 
 ---
 
