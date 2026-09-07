@@ -8,7 +8,7 @@ import {
 import { render } from "react-email";
 import BookingConfirmation from "../emails/BookingConfirmation";
 import React from "react";
-import { EmailError } from "../utils/EmailError";
+import { EmailError, handleBrevoError } from "../utils/EmailError";
 
 export const brevo = new BrevoClient({
   apiKey: BREVO_API_KEY,
@@ -71,7 +71,7 @@ export const sendBookingConfirmationEmail = async ({
       htmlContent: emailHtml,
     });
   } catch (error: any) {
-    console.log("BREVO ERROR: ", error);
-    throw error;
+    // console.log("BREVO ERROR: ", error);
+    throw handleBrevoError(error);
   }
 };

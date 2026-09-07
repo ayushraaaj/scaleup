@@ -1,6 +1,7 @@
-import { Worker } from "bullmq";
+import { UnrecoverableError, Worker } from "bullmq";
 import { redis } from "../config/redis";
 import { sendBookingConfirmationEmail } from "../services/email.service";
+import { EmailError } from "../utils/EmailError";
 
 export const emailWorker = new Worker(
   "email",
@@ -9,20 +10,28 @@ export const emailWorker = new Worker(
 
     // throw new Error("TEST EMAIL WORKER FAILURE");
 
-    if (job.name === "booking-confirmation") {
-      await sendBookingConfirmationEmail({
-        recipientEmail: job.data.recipientEmail,
-        recipientUsername: job.data.recipientUsername,
-        recipientFullname: job.data.recipientFullname,
-        mentorUsername: job.data.mentorUsername,
-        mentorFullname: job.data.mentorFullname,
-        bookingId: job.data.bookingId,
-        date: job.data.date,
-        startTime: job.data.startTime,
-        endTime: job.data.endTime,
-        sessionType: job.data.sessionType,
-        totalPrice: job.data.totalPrice,
-      });
+    try {
+      if (job.name === "booking-confirmation") {
+        await sendBookingConfirmationEmail({
+          recipientEmail: job.data.recipientEmail,
+          recipientUsername: job.data.recipientUsername,
+          recipientFullname: job.data.recipientFullname,
+          mentorUsername: job.data.mentorUsername,
+          mentorFullname: job.data.mentorFullname,
+          bookingId: job.data.bookingId,
+          date: job.data.date,
+          startTime: job.data.startTime,
+          endTime: job.data.endTime,
+          sessionType: job.data.sessionType,
+          totalPrice: job.data.totalPrice,
+        });
+      }
+    } catch (error) {
+      if (error instanceof EmailError && !error.retryable) {
+        throw new UnrecoverableError(error.message);
+      }
+
+      throw error;
     }
   },
   {
