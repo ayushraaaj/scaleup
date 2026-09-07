@@ -64,7 +64,7 @@ export const loginUser = asyncHandler(async (req: Request, res: Response) => {
     httpOnly: true,
     secure: true,
     sameSite: "none" as const,
-    path: "/api/v1/refresh-token",
+    path: "/api/v1/auth/refresh-token",
     maxAge: 7 * 24 * 60 * 60 * 1000,
   };
 
@@ -145,7 +145,7 @@ export const refreshToken = asyncHandler(
       httpOnly: true,
       secure: true,
       sameSite: "none" as const,
-      path: "/api/v1/refresh-token",
+      path: "/api/v1/auth/refresh-token",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     };
 
