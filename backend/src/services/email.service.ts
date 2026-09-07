@@ -9,9 +9,11 @@ import { render } from "react-email";
 import BookingConfirmation from "../emails/BookingConfirmation";
 import React from "react";
 import { EmailError, handleBrevoError } from "../utils/EmailError";
+import { UnrecoverableError } from "bullmq";
 
 export const brevo = new BrevoClient({
   apiKey: BREVO_API_KEY,
+  maxRetries: 0,
 });
 
 export const sendBookingConfirmationEmail = async ({
@@ -41,19 +43,29 @@ export const sendBookingConfirmationEmail = async ({
 }) => {
   const bookingUrl = `${CLIENT_URL}/dashboard/my-bookings/${bookingId}`;
 
-  const emailHtml = await render(
-    React.createElement(BookingConfirmation, {
-      recipientFullname,
-      mentorUsername,
-      mentorFullname,
-      date,
-      startTime,
-      endTime,
-      sessionType,
-      totalPrice,
-      bookingUrl,
-    }),
-  );
+  let emailHtml;
+
+  try {
+    // throw new Error("TEST EMAIL TEMPLATE FAILURE");
+
+    emailHtml = await render(
+      React.createElement(BookingConfirmation, {
+        recipientFullname,
+        mentorUsername,
+        mentorFullname,
+        date,
+        startTime,
+        endTime,
+        sessionType,
+        totalPrice,
+        bookingUrl,
+      }),
+    );
+  } catch (error) {
+    console.error("Email template rendering failed: ", error);
+
+    throw new UnrecoverableError("Failed to render booking confirmation email");
+  }
 
   try {
     await brevo.transactionalEmails.sendTransacEmail({
