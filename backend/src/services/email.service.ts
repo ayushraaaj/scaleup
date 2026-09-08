@@ -9,7 +9,7 @@ import { render } from "react-email";
 import BookingConfirmation from "../emails/BookingConfirmation";
 import React from "react";
 import { UnrecoverableError } from "bullmq";
-import { handleBrevoError } from "../utils/emailError";
+import { handleBrevoError } from "../utils/EmailError";
 
 export const brevo = new BrevoClient({
   apiKey: BREVO_API_KEY,

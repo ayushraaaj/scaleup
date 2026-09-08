@@ -1,7 +1,7 @@
 import { UnrecoverableError, Worker } from "bullmq";
 import { redis } from "../config/redis";
 import { sendBookingConfirmationEmail } from "../services/email.service";
-import { EmailError } from "../utils/emailError";
+import { EmailError } from "../utils/EmailError";
 
 export const emailWorker = new Worker(
   "email",
