@@ -8,7 +8,7 @@ import {
 import { render } from "react-email";
 import BookingConfirmation from "../emails/BookingConfirmation";
 import React from "react";
-import { EmailError, handleBrevoError } from "../utils/EmailError";
+import { EmailError, handleBrevoError } from "../utils/emailError";
 import { UnrecoverableError } from "bullmq";
 
 export const brevo = new BrevoClient({
@@ -84,6 +84,20 @@ export const sendBookingConfirmationEmail = async ({
     });
   } catch (error: any) {
     // console.log("BREVO ERROR: ", error);
+
+    // const testError = {
+    //   statusCode: 429,
+    //   body: {
+    //     code: "rate_limit",
+    //     message: "Too many requests",
+    //   },
+    //   rawResponse: {
+    //     headers: {
+    //       "x-sib-ratelimit-reset": "10",
+    //     },
+    //   },
+    // };
+
     throw handleBrevoError(error);
   }
 };

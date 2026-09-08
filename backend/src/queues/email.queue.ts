@@ -48,8 +48,7 @@ export const addEmailJob = async ({
     {
       attempts: 3,
       backoff: {
-        type: "exponential",
-        delay: 2000,
+        type: "custom",
       },
       removeOnFail: {
         age: 7 * 24 * 60 * 60,
