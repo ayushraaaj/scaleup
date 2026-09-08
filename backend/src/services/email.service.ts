@@ -8,8 +8,8 @@ import {
 import { render } from "react-email";
 import BookingConfirmation from "../emails/BookingConfirmation";
 import React from "react";
-import { EmailError, handleBrevoError } from "../utils/emailError";
 import { UnrecoverableError } from "bullmq";
+import { handleBrevoError } from "../utils/emailError";
 
 export const brevo = new BrevoClient({
   apiKey: BREVO_API_KEY,

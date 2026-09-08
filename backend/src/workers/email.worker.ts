@@ -26,7 +26,7 @@ export const emailWorker = new Worker(
           totalPrice: job.data.totalPrice,
         });
       }
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof EmailError && !error.retryable) {
         throw new UnrecoverableError(error.message);
       }
@@ -38,13 +38,13 @@ export const emailWorker = new Worker(
     connection: redis,
     concurrency: 1,
     settings: {
-      backoffStrategy: (attemptsMade, type, error, job: any) => {
-        if (error instanceof EmailError && error.retryAfter) {
+      backoffStrategy: (attemptsMade, type, error: unknown, job: any) => {
+        if (error instanceof EmailError && error?.retryAfter) {
           console.log(
             `Processing job: ${job.name} at ${new Date().toISOString()}`,
           );
 
-          return error.retryAfter * 1000;
+          return error?.retryAfter * 1000;
         }
 
         return 4000 * 2 ** (attemptsMade - 1);
