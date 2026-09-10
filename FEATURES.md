@@ -164,7 +164,6 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - ✅ Incoming Call Handling
 - ✅ Call Decline Flow
 - ✅ Mentor to User Calls
-- ✅ Mentor to Mentor Calls
 
 ## Session Management
 
@@ -195,8 +194,7 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - ✅ Image Sharing
 - ✅ PDF Sharing
 - ✅ ZIP Sharing
-- ✅ Browser Preview for Supported Files
-- ✅ Automatic Download for Unsupported Files
+- ⏳ Browser Preview / Automatic Download (files currently render as links that open in a new tab)
 
 ---
 
@@ -208,7 +206,7 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - ✅ PDF Upload
 - ✅ ZIP Upload
 - ✅ Secure Cloud Storage
-- ✅ File Preview Support
+- ⏳ In-App File Preview (files are opened as external links)
 
 ---
 
@@ -232,7 +230,8 @@ ScaleUp is a full-stack mentorship platform that connects users with mentors thr
 - ✅ Edit Review
 - ✅ Delete Review
 - ✅ Mentor Rating Aggregation
-- ✅ Mentor Total Reviews & Completed Sessions Tracking
+- ✅ Mentor Total Reviews Tracking
+- ⏳ Mentor Completed Sessions Tracking (`totalSessions` exists in the schema but is not currently incremented)
 
 ---
 

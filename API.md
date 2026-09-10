@@ -3,7 +3,7 @@
 ## Base URL
 
 ```
-http://localhost:8000/api/v1
+http://localhost:8001/api/v1
 ```
 
 ---
@@ -61,28 +61,7 @@ The refresh token is stored as an **HTTP-only cookie** and is used automatically
 
 ## Pagination
 
-Most list endpoints support pagination via query parameters:
-
-```
-GET /api/v1/mentor/all?page=1&limit=10
-```
-
-Response includes:
-
-```json
-{
-  "data": {
-    "mentors": [...],
-    "pagination": {
-      "currentPage": 1,
-      "totalPages": 5,
-      "totalItems": 50,
-      "hasNextPage": true,
-      "hasPrevPage": false
-    }
-  }
-}
-```
+List endpoints support pagination via `page` and `limit` values. The default `page` is `1`; the default `limit` varies per endpoint and is listed with each endpoint. Pagination metadata is returned as **flat fields** inside the `data` object (for example `totalPages`, `totalMentors`, `totalComments`) — there is no nested `pagination` object. See each endpoint's response example for its exact shape.
 
 ---
 
@@ -103,8 +82,8 @@ Check if the server is running.
 ```json
 {
   "success": true,
-  "message": "Server is running",
-  "data": null
+  "message": "OK",
+  "data": "Server is running fine"
 }
 ```
 
@@ -131,33 +110,31 @@ Register a new user account.
 
 **Validation Rules:**
 
-- `fullname`: Required, 2-50 characters
-- `username`: Required, 3-20 characters, alphanumeric + underscore, unique
-- `email`: Required, valid email format, unique
-- `password`: Required, 8-128 characters
+- `fullname`: Required, minimum 3 characters
+- `username`: Required, minimum 3 characters, lowercase only, unique
+- `email`: Required, valid email format, lowercase, unique
+- `password`: Required, minimum 5 characters
 
 **Response (201):**
 
 ```json
 {
   "success": true,
-  "message": "User registered successfully",
+  "message": "Signup successful",
   "data": {
-    "user": {
-      "_id": "...",
-      "fullname": "John Doe",
-      "username": "johndoe",
-      "email": "john@example.com",
-      "createdAt": "...",
-      "updatedAt": "..."
-    }
+    "_id": "...",
+    "fullname": "John Doe",
+    "username": "johndoe",
+    "email": "john@example.com",
+    "createdAt": "...",
+    "updatedAt": "..."
   }
 }
 ```
 
 **Errors:**
 
-- `409` — Username or email already exists
+- `409` — User with username or email already exists
 - `422` — Validation failed
 
 ---
@@ -188,7 +165,6 @@ Login with email/username and password.
       "_id": "...",
       "fullname": "John Doe",
       "username": "johndoe",
-      "email": "john@example.com",
       "role": "user"
     },
     "accessToken": "eyJhbGciOiJIUzI1NiIs..."
@@ -199,10 +175,10 @@ Login with email/username and password.
 **Set Cookie:**
 
 ```
-refreshToken: <token>; HttpOnly; Secure; SameSite=Strict; Max-Age=604800
+refreshToken: <token>; HttpOnly; Secure; SameSite=None; Path=/api/v1/auth/refresh-token; Max-Age=604800
 ```
 
-**Note:** `role` is `"mentor"` if the user has a mentor profile, otherwise `"user"`.
+**Note:** `role` is `"mentor"` if the user has a mentor profile, otherwise `"user"`. The refresh cookie is scoped to the refresh-token endpoint only.
 
 **Errors:**
 
@@ -222,9 +198,15 @@ Refresh an expired access token using the refresh token cookie.
 ```json
 {
   "success": true,
-  "message": "Token refreshed successfully",
+  "message": "Access token refreshed",
   "data": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIs..."
+    "newAccessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "user": {
+      "_id": "...",
+      "fullname": "John Doe",
+      "username": "johndoe",
+      "role": "user"
+    }
   }
 }
 ```
@@ -232,7 +214,7 @@ Refresh an expired access token using the refresh token cookie.
 **Set Cookie:**
 
 ```
-refreshToken: <new_token>; HttpOnly; Secure; SameSite=Strict; Max-Age=604800
+refreshToken: <new_token>; HttpOnly; Secure; SameSite=None; Path=/api/v1/auth/refresh-token; Max-Age=604800
 ```
 
 **Errors:**
@@ -253,8 +235,8 @@ Logout and revoke refresh token.
 ```json
 {
   "success": true,
-  "message": "Logged out successfully",
-  "data": null
+  "message": "Logout successful",
+  "data": {}
 }
 ```
 
@@ -276,17 +258,15 @@ Get the currently authenticated user.
 ```json
 {
   "success": true,
-  "message": "User fetched successfully",
+  "message": "User Authenticated",
   "data": {
-    "user": {
-      "_id": "...",
-      "fullname": "John Doe",
-      "username": "johndoe",
-      "email": "john@example.com",
-      "role": "mentor",
-      "createdAt": "...",
-      "updatedAt": "..."
-    }
+    "_id": "...",
+    "fullname": "John Doe",
+    "username": "johndoe",
+    "email": "john@example.com",
+    "role": "mentor",
+    "createdAt": "...",
+    "updatedAt": "..."
   }
 }
 ```
@@ -297,23 +277,23 @@ Get the currently authenticated user.
 
 ### GET `/mentor/all`
 
-List all mentors with pagination.
+List all mentors.
 
 **Auth Required:** Yes
 
 **Query Parameters:**
 
-| Parameter | Type   | Default | Description    |
-| --------- | ------ | ------- | -------------- |
-| `page`    | number | 1       | Page number    |
-| `limit`   | number | 10      | Items per page |
+| Parameter | Type   | Default | Description                                                    |
+| --------- | ------ | ------- | -------------------------------------------------------------- |
+| `page`    | number | 1       | Page number (read from route params; not currently wired to the query string) |
+| `limit`   | number | 10      | Items per page (read from route params; not currently wired to the query string) |
 
 **Response (200):**
 
 ```json
 {
   "success": true,
-  "message": "Mentors fetched successfully",
+  "message": "Mentors fetched",
   "data": {
     "mentors": [
       {
@@ -325,27 +305,27 @@ List all mentors with pagination.
         },
         "bio": "Senior software engineer...",
         "expertise": ["JavaScript", "React", "Node.js"],
+        "consultationTypes": {
+          "audio": true,
+          "video": true
+        },
         "pricing": {
           "audio": 50,
           "video": 75
         },
-        "ratings": {
-          "average": 4.5,
-          "total": 12
-        },
+        "ratings": 4.5,
+        "totalRating": 54,
+        "totalReviews": 12,
         "totalSessions": 25
       }
     ],
-    "pagination": {
-      "currentPage": 1,
-      "totalPages": 5,
-      "totalItems": 50,
-      "hasNextPage": true,
-      "hasPrevPage": false
-    }
+    "totalMentors": 50,
+    "totalPages": 5
   }
 }
 ```
+
+**Note:** `page`/`limit` are read from `req.params` rather than the query string, so they currently always fall back to their defaults (`page=1`, `limit=10`).
 
 ---
 
@@ -366,42 +346,37 @@ Get a mentor's profile by username.
 ```json
 {
   "success": true,
-  "message": "Mentor fetched successfully",
+  "message": "Mentor detail fetched",
   "data": {
-    "mentor": {
+    "_id": "...",
+    "userId": {
       "_id": "...",
-      "userId": {
-        "_id": "...",
-        "fullname": "Jane Smith",
-        "username": "janesmith",
-        "email": "jane@example.com"
-      },
-      "bio": "Senior software engineer with 10+ years...",
-      "expertise": ["JavaScript", "React", "Node.js"],
-      "consultationTypes": {
-        "audio": true,
-        "video": true
-      },
-      "pricing": {
-        "audio": 50,
-        "video": 75
-      },
-      "ratings": {
-        "average": 4.5,
-        "total": 12
-      },
-      "totalSessions": 25,
-      "totalReviews": 12,
-      "availability": [
-        {
-          "date": "2024-01-15",
-          "slots": [
-            { "startTime": "10:00", "endTime": "11:00" },
-            { "startTime": "14:00", "endTime": "15:00" }
-          ]
-        }
-      ]
-    }
+      "fullname": "Jane Smith",
+      "username": "janesmith"
+    },
+    "bio": "Senior software engineer with 10+ years...",
+    "expertise": ["JavaScript", "React", "Node.js"],
+    "consultationTypes": {
+      "audio": true,
+      "video": true
+    },
+    "pricing": {
+      "audio": 50,
+      "video": 75
+    },
+    "ratings": 4.5,
+    "totalRating": 54,
+    "totalReviews": 12,
+    "totalSessions": 25,
+    "availability": [
+      {
+        "date": "2024-01-15",
+        "slots": [
+          { "startTime": "10:00", "endTime": "11:00" },
+          { "startTime": "14:00", "endTime": "15:00" }
+        ]
+      }
+    ]
   }
 }
 ```
@@ -437,20 +412,20 @@ Create a mentor profile.
 
 **Validation Rules:**
 
-- `bio`: Required, 10-500 characters
-- `expertise`: Required, array of 1-10 strings
-- `consultationTypes`: Required, at least one type must be true
-- `pricing`: Required, positive numbers for enabled consultation types
+- `bio`: Required, minimum 10 characters
+- `expertise`: Required, array with at least one non-empty string
+- `pricing.audio`: Required, numeric, non-negative
+- `pricing.video`: Required, numeric, non-negative
+
+`consultationTypes` is not validated by the API.
 
 **Response (201):**
 
 ```json
 {
   "success": true,
-  "message": "Mentor profile created successfully",
-  "data": {
-    "mentor": { ... }
-  }
+  "message": "Mentor profile created",
+  "data": { ... }
 }
 ```
 
@@ -474,10 +449,8 @@ Update an existing mentor profile.
 ```json
 {
   "success": true,
-  "message": "Mentor profile updated successfully",
-  "data": {
-    "mentor": { ... }
-  }
+  "message": "Mentor profile updated",
+  "data": { ... }
 }
 ```
 
@@ -494,18 +467,16 @@ Get the current user's mentor availability.
 ```json
 {
   "success": true,
-  "message": "Availability fetched successfully",
-  "data": {
-    "availability": [
-      {
-        "date": "2024-01-15",
-        "slots": [
-          { "startTime": "10:00", "endTime": "11:00" },
-          { "startTime": "14:00", "endTime": "15:00" }
-        ]
-      }
-    ]
-  }
+  "message": "Mentor availability fetched",
+  "data": [
+    {
+      "date": "2024-01-15",
+      "slots": [
+        { "startTime": "10:00", "endTime": "11:00" },
+        { "startTime": "14:00", "endTime": "15:00" }
+      ]
+    }
+  ]
 }
 ```
 
@@ -539,11 +510,15 @@ Update mentor availability.
 
 **Validation Rules:**
 
-- `availability`: Required, array of date objects
-- Each date must be unique
-- `slots`: Required, array of 1-10 time slots
+- `availability`: Required array of date objects
+- Each `date`: Valid ISO date
+- `slots`: Required non-empty array
+- Each `slots.*.startTime` / `slots.*.endTime`: Required, `HH:mm` format
+
+Additional checks in the controller:
+
 - `startTime` must be before `endTime`
-- Minimum slot duration: 30 minutes
+- Slots for the same date must not overlap
 
 **Response (200):**
 
@@ -551,9 +526,7 @@ Update mentor availability.
 {
   "success": true,
   "message": "Availability updated successfully",
-  "data": {
-    "availability": [ ... ]
-  }
+  "data": [ ... ]
 }
 ```
 
@@ -582,17 +555,20 @@ Get available slots for a specific mentor on a specific date.
 ```json
 {
   "success": true,
-  "message": "Available slots fetched successfully",
-  "data": {
-    "availableSlots": [
-      { "startTime": "10:00", "endTime": "11:00" },
-      { "startTime": "14:00", "endTime": "15:00" }
-    ]
-  }
+  "message": "Available slots",
+  "data": [
+    { "startTime": "10:00", "endTime": "11:00" },
+    { "startTime": "14:00", "endTime": "15:00" }
+  ]
 }
 ```
 
-**Note:** This returns slots **after** subtracting active bookings (dynamic availability).
+**Note:** 
+
+- Slot availability is computed dynamically by splitting each declared slot into 1-hour intervals and subtracting active bookings.
+- Past dates are rejected with `400` — "Cannot book past dates".
+- Booking is allowed only within the next 30 days; beyond that the API returns `400` — "Booking allowed only within next 30 days".
+- If the mentor has no availability on the requested date, an empty object is returned with the message `"Mentor is not available"`.
 
 ---
 
@@ -607,27 +583,30 @@ Get the mentor's upcoming and past sessions.
 ```json
 {
   "success": true,
-  "message": "Sessions fetched successfully",
+  "message": "Sessions are fetched",
   "data": {
-    "upcomingSessions": [
+    "upcoming": [
       {
         "_id": "...",
-        "bookingId": {
+        "mentorId": "...",
+        "userId": {
           "_id": "...",
-          "userId": { "fullname": "John Doe", "username": "johndoe" },
-          "sessionType": "video",
-          "date": "2024-01-15",
-          "startTime": "10:00",
-          "endTime": "11:00",
-          "status": "confirmed"
+          "fullname": "John Doe",
+          "username": "johndoe"
         },
-        "sessionStatus": "ongoing"
+        "sessionType": "video",
+        "date": "2024-01-15",
+        "startTime": "10:00",
+        "endTime": "11:00",
+        "status": "confirmed"
       }
     ],
-    "pastSessions": [ ... ]
+    "past": [ ... ]
   }
 }
 ```
+
+**Note:** Each item is a **Booking** document (populated with the learner's `fullname`/`username`), split by whether the session start time is in the future or the past.
 
 ---
 
@@ -648,33 +627,27 @@ Get detailed information about a specific session.
 ```json
 {
   "success": true,
-  "message": "Session details fetched successfully",
+  "message": "Session fetched",
   "data": {
-    "session": {
+    "_id": "...",
+    "mentorId": "...",
+    "userId": {
       "_id": "...",
-      "bookingId": {
-        "_id": "...",
-        "userId": {
-          "_id": "...",
-          "fullname": "John Doe",
-          "username": "johndoe",
-          "email": "john@example.com"
-        },
-        "sessionType": "video",
-        "date": "2024-01-15",
-        "startTime": "10:00",
-        "endTime": "11:00",
-        "totalPrice": 75,
-        "status": "confirmed"
-      },
-      "sessionType": "video",
-      "sessionStatus": "completed",
-      "completionReason": "mutual_agreement",
-      "completedAt": "..."
-    }
+      "fullname": "John Doe",
+      "username": "johndoe"
+    },
+    "sessionType": "video",
+    "date": "2024-01-15",
+    "startTime": "10:00",
+    "endTime": "11:00",
+    "hourlyRate": 75,
+    "totalPrice": 75,
+    "status": "confirmed"
   }
 }
 ```
+
+**Note:** This returns the underlying **Booking** document, not a Session document.
 
 ---
 
@@ -696,10 +669,12 @@ Get posts created by the current mentor.
 ```json
 {
   "success": true,
-  "message": "Posts fetched successfully",
+  "message": "Post fetched",
   "data": {
-    "posts": [ ... ],
-    "pagination": { ... }
+    "page": 1,
+    "totalPages": 2,
+    "totalPosts": 15,
+    "posts": [ ... ]
   }
 }
 ```
@@ -726,7 +701,7 @@ List all posts with pagination.
 ```json
 {
   "success": true,
-  "message": "Posts fetched successfully",
+  "message": "Posts fetched",
   "data": {
     "posts": [
       {
@@ -746,7 +721,7 @@ List all posts with pagination.
         "createdAt": "..."
       }
     ],
-    "pagination": { ... }
+    "totalPages": 5
   }
 }
 ```
@@ -818,21 +793,22 @@ Create a new post (mentors only).
 
 **Validation Rules:**
 
-- `title`: Required, 1-200 characters
+- `title`: Required, minimum 5 characters
 - `content`: Required, TipTap JSON format
-- `preview`: Optional, max 500 characters
-- `tags`: Optional, array of 1-10 strings
+
+Notes:
+
+- `tags`: Optional array
 - `visibility`: Optional, `"free"` or `"premium"` (default: `"free"`)
+- `preview` is auto-generated from the first 120 characters of the post text
 
 **Response (201):**
 
 ```json
 {
   "success": true,
-  "message": "Post created successfully",
-  "data": {
-    "post": { ... }
-  }
+  "message": "Comment added",
+  "data": { ... }
 }
 ```
 
@@ -851,10 +827,8 @@ Edit a post (owner only).
 ```json
 {
   "success": true,
-  "message": "Post updated successfully",
-  "data": {
-    "post": { ... }
-  }
+  "message": "Post details updated successfully",
+  "data": { ... }
 }
 ```
 
@@ -872,7 +846,7 @@ Delete a post (owner only).
 {
   "success": true,
   "message": "Post deleted successfully",
-  "data": null
+  "data": {}
 }
 ```
 
@@ -907,14 +881,12 @@ Toggle like/dislike on a post.
 ```json
 {
   "success": true,
-  "message": "Reaction added successfully",
-  "data": {
-    "likesCount": 16
-  }
+  "message": "Reaction added",
+  "data": {}
 }
 ```
 
-**Note:** Calling again with the same type removes the reaction (toggle behavior).
+**Note:** Calling again with the same type removes the reaction (message: `"Reaction removed"`). Switching between `like` and `dislike` updates the reaction (message: `"Reaction updated"`).
 
 ---
 
@@ -934,7 +906,7 @@ Add a comment to a post.
 
 **Validation Rules:**
 
-- `content`: Required, 1-1000 characters
+- `content`: Required, minimum 4 characters
 
 **Response (201):**
 
@@ -978,10 +950,12 @@ Get comments for a post with pagination.
 ```json
 {
   "success": true,
-  "message": "Comments fetched successfully",
+  "message": "Comments fetched",
   "data": {
-    "comments": [ ... ],
-    "pagination": { ... }
+    "page": 1,
+    "totalPages": 1,
+    "totalComments": 8,
+    "comments": [ ... ]
   }
 }
 ```
@@ -1028,7 +1002,7 @@ Delete a comment (owner only).
 {
   "success": true,
   "message": "Comment deleted successfully",
-  "data": null
+  "data": {}
 }
 ```
 
@@ -1062,31 +1036,29 @@ Create a new booking with a mentor.
 **Validation Rules:**
 
 - `sessionType`: Required, `"audio"` or `"video"`
-- `date`: Required, YYYY-MM-DD format, must be today or future
-- `startTime`: Required, HH:MM format
-- `endTime`: Required, HH:MM format, must be after startTime
-- Minimum duration: 30 minutes
+- `startTime`: Required
+
+`date` and `endTime` are not directly validated by `express-validator`; they are checked against the mentor's declared availability by the controller.
 
 **Response (201):**
 
 ```json
 {
   "success": true,
-  "message": "Booking created successfully",
+  "message": "Slot reserved",
   "data": {
-    "booking": {
-      "_id": "...",
-      "mentorId": "...",
-      "userId": "...",
-      "sessionType": "video",
-      "date": "2024-01-15",
-      "startTime": "10:00",
-      "endTime": "11:00",
-      "hourlyRate": 75,
-      "totalPrice": 75,
-      "status": "confirmed",
-      "createdAt": "..."
-    }
+    "_id": "...",
+    "mentorId": "...",
+    "userId": "...",
+    "sessionType": "video",
+    "date": "2024-01-15",
+    "startTime": "10:00",
+    "endTime": "11:00",
+    "hourlyRate": 75,
+    "totalPrice": 75,
+    "status": "confirmed",
+    "expiresAt": "...",
+    "createdAt": "..."
   }
 }
 ```
@@ -1095,11 +1067,15 @@ Create a new booking with a mentor.
 
 - Creates outbox event for booking confirmation email
 - Email sent asynchronously via worker process
+- Sends a real-time notification to the mentor
 
 **Errors:**
 
 - `404` — Mentor not found
-- `409` — Slot already booked
+- `400` — Mentor is not available
+- `400` — Mentor not available on this day
+- `400` — Selected time is outside mentors availability
+- `409` — Time slot is not available (double booking)
 - `422` — Validation failed
 - `500` — Booking creation failed
 
@@ -1116,29 +1092,29 @@ Get the current user's bookings (upcoming and past).
 ```json
 {
   "success": true,
-  "message": "Bookings fetched successfully",
+  "message": "Bookings are fetched",
   "data": {
-    "upcomingBookings": [
+    "upcoming": [
       {
         "_id": "...",
         "mentorId": {
           "_id": "...",
           "userId": {
+            "_id": "...",
             "fullname": "Jane Smith",
             "username": "janesmith"
-          },
-          "pricing": { "video": 75 }
+          }
         },
+        "userId": "...",
         "sessionType": "video",
         "date": "2024-01-15",
         "startTime": "10:00",
         "endTime": "11:00",
         "totalPrice": 75,
-        "status": "confirmed",
-        "sessionStatus": "ongoing"
+        "status": "confirmed"
       }
     ],
-    "pastBookings": [ ... ]
+    "past": [ ... ]
   }
 }
 ```
@@ -1162,36 +1138,26 @@ Get detailed information about a specific booking.
 ```json
 {
   "success": true,
-  "message": "Booking details fetched successfully",
+  "message": "Booking fetched",
   "data": {
-    "booking": {
+    "_id": "...",
+    "mentorId": {
       "_id": "...",
-      "mentorId": {
-        "_id": "...",
-        "userId": {
-          "fullname": "Jane Smith",
-          "username": "janesmith"
-        },
-        "bio": "Senior software engineer...",
-        "expertise": ["JavaScript", "React"],
-        "pricing": { "video": 75 }
-      },
       "userId": {
         "_id": "...",
-        "fullname": "John Doe",
-        "username": "johndoe"
-      },
-      "sessionType": "video",
-      "date": "2024-01-15",
-      "startTime": "10:00",
-      "endTime": "11:00",
-      "hourlyRate": 75,
-      "totalPrice": 75,
-      "status": "confirmed",
-      "sessionStatus": "ongoing",
-      "isReviewed": false,
-      "createdAt": "..."
-    }
+        "fullname": "Jane Smith",
+        "username": "janesmith"
+      }
+    },
+    "userId": "...",
+    "sessionType": "video",
+    "date": "2024-01-15",
+    "startTime": "10:00",
+    "endTime": "11:00",
+    "hourlyRate": 75,
+    "totalPrice": 75,
+    "status": "confirmed",
+    "createdAt": "..."
   }
 }
 ```
@@ -1212,8 +1178,8 @@ Send a message in a booking's chat (with optional file upload).
 
 | Field     | Type   | Required | Description                                    |
 | --------- | ------ | -------- | ---------------------------------------------- |
-| `content` | string | Yes\*    | Message text (\*can be empty if file attached) |
-| `file`    | file   | No       | Image, PDF, or ZIP (max 10MB)                  |
+| `content` | string | Yes      | Message text                                   |
+| `file`    | file   | No       | Optional file attachment                       |
 
 **Response (201):**
 
@@ -1231,7 +1197,7 @@ Send a message in a booking's chat (with optional file upload).
         "username": "johndoe"
       },
       "content": "Here's the file you requested",
-      "fileType": "pdf",
+      "fileType": "application/pdf",
       "fileName": "document.pdf",
       "fileUrl": "https://res.cloudinary.com/...",
       "delivered": true,
@@ -1244,10 +1210,11 @@ Send a message in a booking's chat (with optional file upload).
 
 **File Upload Rules:**
 
-- Supported types: Images (jpg, png, gif), PDF, ZIP
-- Maximum size: 10MB
-- Files uploaded to Cloudinary
-- Local temp file deleted after upload
+- `content` is always required (validated via `express-validator`), even when a file is attached
+- `multer` accepts any file — no file type or size restriction is enforced by the server
+- Files are uploaded to Cloudinary
+- The local temp file is deleted after upload
+- `fileType` stores the MIME type of the uploaded file
 
 ---
 
@@ -1268,38 +1235,8 @@ Get all messages in a booking's chat.
 ```json
 {
   "success": true,
-  "message": "Messages fetched successfully",
-  "data": {
-    "messages": [
-      {
-        "_id": "...",
-        "senderId": {
-          "_id": "...",
-          "fullname": "John Doe",
-          "username": "johndoe"
-        },
-        "content": "Hello!",
-        "delivered": true,
-        "seen": true,
-        "createdAt": "..."
-      },
-      {
-        "_id": "...",
-        "senderId": {
-          "_id": "...",
-          "fullname": "Jane Smith",
-          "username": "janesmith"
-        },
-        "content": "Here's the file",
-        "fileType": "pdf",
-        "fileName": "document.pdf",
-        "fileUrl": "https://res.cloudinary.com/...",
-        "delivered": true,
-        "seen": true,
-        "createdAt": "..."
-      }
-    ]
-  }
+  "message": "Messages fetched",
+  "data": [ ... ]
 }
 ```
 
@@ -1327,7 +1264,7 @@ Create a review for a completed session.
 
 - `bookingId`: Required, valid MongoDB ObjectId
 - `rating`: Required, integer between 1 and 5
-- `review`: Required, 10-1000 characters
+- `review`: Optional, minimum 5 characters
 
 **Constraints:**
 
@@ -1343,19 +1280,13 @@ Create a review for a completed session.
   "success": true,
   "message": "Review created successfully",
   "data": {
-    "review": {
-      "_id": "...",
-      "bookingId": "...",
-      "mentorId": "...",
-      "userId": {
-        "_id": "...",
-        "fullname": "John Doe",
-        "username": "johndoe"
-      },
-      "rating": 5,
-      "review": "Excellent session! Very helpful and knowledgeable mentor.",
-      "createdAt": "..."
-    }
+    "_id": "...",
+    "bookingId": "...",
+    "mentorId": "...",
+    "userId": "...",
+    "rating": 5,
+    "review": "Excellent session! Very helpful and knowledgeable mentor.",
+    "createdAt": "..."
   }
 }
 ```
@@ -1366,10 +1297,12 @@ Create a review for a completed session.
 
 **Errors:**
 
+- `400` — You have already reviewed this session
+- `400` — Reviews can only be submitted after a completed session
+- `400` — Rating and review is not available after 7 days of session
 - `404` — Booking not found
-- `403` — Not authorized to review this booking
-- `409` — Review already exists for this booking
-- `422` — Review window expired (7 days)
+- `404` — Session not found
+- `422` — Validation failed
 
 ---
 
@@ -1390,29 +1323,27 @@ Get reviews for a specific mentor.
 | Parameter | Type   | Default | Description    |
 | --------- | ------ | ------- | -------------- |
 | `page`    | number | 1       | Page number    |
-| `limit`   | number | 10      | Items per page |
+| `limit`   | number | 5       | Items per page |
 
 **Response (200):**
 
 ```json
 {
   "success": true,
-  "message": "Reviews fetched successfully",
-  "data": {
-    "reviews": [
-      {
+  "message": "Mentor reviews fetched",
+  "data": [
+    {
+      "_id": "...",
+      "userId": {
         "_id": "...",
-        "userId": {
-          "fullname": "John Doe",
-          "username": "johndoe"
-        },
-        "rating": 5,
-        "review": "Excellent session!",
-        "createdAt": "..."
-      }
-    ],
-    "pagination": { ... }
-  }
+        "fullname": "John Doe",
+        "username": "johndoe"
+      },
+      "rating": 5,
+      "review": "Excellent session!",
+      "createdAt": "..."
+    }
+  ]
 }
 ```
 
@@ -1429,10 +1360,8 @@ Get reviews written by the current user.
 ```json
 {
   "success": true,
-  "message": "Reviews fetched successfully",
-  "data": {
-    "reviews": [ ... ]
-  }
+  "message": "User reviews fetched",
+  "data": [ ... ]
 }
 ```
 
@@ -1455,16 +1384,14 @@ Get a single review by booking ID.
 ```json
 {
   "success": true,
-  "message": "Review fetched successfully",
+  "message": "Review fetched",
   "data": {
+    "canEdit": true,
     "review": {
       "_id": "...",
       "bookingId": "...",
       "mentorId": "...",
-      "userId": {
-        "fullname": "John Doe",
-        "username": "johndoe"
-      },
+      "userId": "...",
       "rating": 5,
       "review": "Excellent session!",
       "createdAt": "..."
@@ -1472,6 +1399,8 @@ Get a single review by booking ID.
   }
 }
 ```
+
+**Note:** `canEdit` is `true` while the review falls within the 48-hour edit window.
 
 ---
 
@@ -1499,17 +1428,15 @@ Edit a review (within 48-hour window).
 ```json
 {
   "success": true,
-  "message": "Review updated successfully",
-  "data": {
-    "review": { ... }
-  }
+  "message": "Review edited successfully",
+  "data": { ... }
 }
 ```
 
 **Errors:**
 
-- `403` — Not authorized
-- `422` — Edit window expired (48 hours)
+- `404` — Review not found
+- `400` — Review and rating can't be edited after 48 hours of its creation
 
 ---
 
@@ -1525,7 +1452,7 @@ Delete a review.
 {
   "success": true,
   "message": "Review deleted successfully",
-  "data": null
+  "data": {}
 }
 ```
 
@@ -1548,14 +1475,14 @@ Get notifications for the current user.
 | Parameter | Type   | Default | Description    |
 | --------- | ------ | ------- | -------------- |
 | `page`    | number | 1       | Page number    |
-| `limit`   | number | 20      | Items per page |
+| `limit`   | number | 5       | Items per page |
 
 **Response (200):**
 
 ```json
 {
   "success": true,
-  "message": "Notifications fetched successfully",
+  "message": "Notifications fetched",
   "data": {
     "notifications": [
       {
@@ -1564,6 +1491,7 @@ Get notifications for the current user.
         "bookingId": {
           "_id": "...",
           "userId": {
+            "_id": "...",
             "fullname": "John Doe",
             "username": "johndoe"
           },
@@ -1575,8 +1503,8 @@ Get notifications for the current user.
         "createdAt": "..."
       }
     ],
-    "unreadCount": 5,
-    "pagination": { ... }
+    "totalNotificationCount": 20,
+    "unreadNotificationCount": 5
   }
 }
 ```
@@ -1594,8 +1522,10 @@ Mark all notifications as read.
 ```json
 {
   "success": true,
-  "message": "All notifications marked as read",
-  "data": null
+  "message": "Notifications marked as read",
+  "data": {
+    "modifiedCount": 5
+  }
 }
 ```
 
@@ -1626,7 +1556,7 @@ Get the count of unread notifications.
 ## Connection
 
 ```javascript
-const socket = io("http://localhost:8000", {
+const socket = io("http://localhost:8001", {
   auth: {
     token: "Bearer <access_token>",
   },
@@ -1637,7 +1567,7 @@ const socket = io("http://localhost:8000", {
 
 | Event                  | Data                       | Description                          |
 | ---------------------- | -------------------------- | ------------------------------------ |
-| `join-room`            | `{ bookingId }`            | Join a booking's room (chat + video) |
+| `join-room`            | `bookingId` (string)      | Join a booking's room (chat + video) |
 | `typing`               | `{ bookingId, name }`      | Broadcast typing indicator           |
 | `send-message`         | `{ bookingId, ... }`       | Broadcast new message                |
 | `call-request`         | `{ id }`                   | Initiate a video call                |
@@ -1660,23 +1590,23 @@ const socket = io("http://localhost:8000", {
 | Event                        | Data                      | Description                             |
 | ---------------------------- | ------------------------- | --------------------------------------- |
 | `join-room-error`            | `{ message }`             | Failed to join room                     |
-| `user-typing`                | `{ name }`                | User is typing                          |
+| `user-typing`                | `name` (string)           | User is typing                          |
 | `receive-message`            | `{ ... }`                 | New message received                    |
-| `incoming-call`              | `{ ... }`                 | Incoming call notification              |
+| `incoming-call`              | *(no payload)*            | Incoming call notification              |
 | `user-joined-call`           | `{ fullname }`            | User joined the call                    |
 | `call-declined`              | `{ fullname }`            | Call was declined                       |
 | `participant-rejoined`       | `{ fullname }`            | Participant rejoined                    |
-| `receive-offer`              | `{ id, offer, fullname }` | WebRTC offer received                   |
-| `receive-answer`             | `{ id, answer }`          | WebRTC answer received                  |
-| `receive-ice-candidate`      | `{ id, candidate }`       | ICE candidate received                  |
-| `call-ended`                 | `{ fullname }`            | Call has ended                          |
+| `receive-offer`              | `{ offer, fullname }`     | WebRTC offer received                   |
+| `receive-answer`             | `answer` (SDP)            | WebRTC answer received                  |
+| `receive-ice-candidate`      | `candidate` (ICE)         | ICE candidate received                  |
+| `call-ended`                 | *(no payload)*            | Call has ended                          |
 | `end-session-requested`      | `{ fullname }`            | End session request received            |
 | `session-continued`          | `{ fullname }`            | Session continued                       |
 | `remote-camera-status`       | `{ enabled }`             | Remote camera status                    |
 | `remote-mic-status`          | `{ enabled }`             | Remote mic status                       |
 | `remote-screen-share-status` | `{ enabled }`             | Remote screen share status              |
 | `new-booking-notification`   | `{ unreadCount }`         | New booking notification (unread count) |
-| `new-detail-notification`    | `{ notification }`        | New notification with full details      |
+| `new-detail-notification`    | `{ newNotification }`     | New notification with full details      |
 
 ---
 

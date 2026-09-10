@@ -287,6 +287,9 @@ For more detailed information about the project:
 ## Product
 
 - Landing Page
+- Email Verification
+- Forgot Password / Password Reset
+- Pending Booking Flow with Expiry
 - Search & Filtering
 - Session Notes
 - Mentor Analytics

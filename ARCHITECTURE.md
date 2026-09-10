@@ -477,7 +477,7 @@ For each session:
 | Booking → Message | 1:N | Chat messages per booking |
 | Booking → Review | 1:1 | One review per booking |
 | User → Notification | 1:N | Notifications per user |
-| Mentor → Post | 1:N | Posts by mentors |
+| Mentor (via user id) → Post | 1:N | Posts by mentors; `Post.mentorId` references the **users** collection, not mentors |
 | Post → Comment | 1:N | Comments on posts |
 | Post → Reaction | 1:N | Likes/dislikes on posts |
 
@@ -490,9 +490,12 @@ To avoid expensive COUNT queries, several counters are maintained incrementally:
 | `likesCount` | Post | Reaction added/removed |
 | `commentsCount` | Post | Comment added/removed |
 | `unreadNotificationCount` | User | Notification created/read |
+| `ratings` | Mentor | Review created/edited/deleted (average rating) |
 | `totalRating` | Mentor | Review created/edited/deleted |
 | `totalReviews` | Mentor | Review created/deleted |
-| `totalSessions` | Mentor | Session completed |
+| `totalSessions` | Mentor | Defined but not currently incremented — only decremented when a review is deleted |
+
+> **Note:** `Booking.sessionStatus` is a plain string in the schema (no enum constraint), unlike the validated `sessionStatus` enum on the `Session` model.
 
 ---
 
@@ -514,8 +517,10 @@ To avoid expensive COUNT queries, several counters are maintained incrementally:
      ┌──────────┐  ┌──────────┐       ┌─────┴──────┐
      │cancelled │  │expired   │       │ no_show_by │
      └──────────┘  └──────────┘       │ _mentor    │
-                                      └────────────┘
+                                       └────────────┘
 ```
+
+The schema also permits `cancelled_by_mentor` and `disputed` statuses; no flow currently transitions bookings into either of them.
 
 ### Session Status
 
@@ -530,14 +535,14 @@ To avoid expensive COUNT queries, several counters are maintained incrementally:
      └──────┬───────┘     └──────────────┘
             │
             ▼
-     ┌──────────────┐
-     │  completed   │
-     │              │
-     │ Reasons:     │
-     │ - mutual     │
-     │ - scheduled  │
-     │ - cancelled  │
-     └──────────────┘
+     ┌────────────────────┐
+     │      completed      │
+     │                     │
+     │ Reasons:            │
+     │ - mutual_agreement  │
+     │ - scheduled_end     │
+     │ - cancelled         │
+     └─────────────────────┘
 ```
 
 ### Outbox Event Lifecycle
