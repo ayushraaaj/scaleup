@@ -99,6 +99,7 @@ export const createBooking = asyncHandler(
           {
             type: "BOOKING_CONFIRMATION_EMAIL",
             payload: {
+              recipientId: userId,
               recipientEmail: userEmail,
               recipientUsername: userUsername,
               recipientFullname: userFullname,

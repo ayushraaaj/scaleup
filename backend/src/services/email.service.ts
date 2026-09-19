@@ -68,7 +68,7 @@ export const sendBookingConfirmationEmail = async ({
   }
 
   try {
-    await brevo.transactionalEmails.sendTransacEmail({
+    const response = await brevo.transactionalEmails.sendTransacEmail({
       sender: {
         name: EMAIL_FROM_NAME,
         email: EMAIL_FROM,
@@ -82,6 +82,10 @@ export const sendBookingConfirmationEmail = async ({
       subject: "Booking Confirmed",
       htmlContent: emailHtml,
     });
+
+    console.log("Brevo response: ", response);
+
+    return response;
   } catch (error: any) {
     // console.log("BREVO ERROR: ", error);
 

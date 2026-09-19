@@ -8,6 +8,7 @@ export const emailQueue = new Queue("email", {
 export const addEmailJob = async (
   eventId: string,
   {
+    recipientId,
     recipientEmail,
     recipientUsername,
     recipientFullname,
@@ -20,6 +21,7 @@ export const addEmailJob = async (
     sessionType,
     totalPrice,
   }: {
+    recipientId: string;
     recipientEmail: string;
     recipientUsername: string;
     recipientFullname: string;
@@ -36,6 +38,8 @@ export const addEmailJob = async (
   await emailQueue.add(
     "booking-confirmation",
     {
+      outboxEventId: eventId,
+      recipientId,
       recipientEmail,
       recipientUsername,
       recipientFullname,
