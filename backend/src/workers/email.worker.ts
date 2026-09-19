@@ -1,17 +1,22 @@
 import { UnrecoverableError, Worker } from "bullmq";
 import { redis } from "../config/redis";
 import { sendBookingConfirmationEmail } from "../services/email.service";
-import { EmailError } from "../utils/EmailError";
+import { EmailError } from "../utils/emailError";
 
 export const emailWorker = new Worker(
   "email",
   async (job) => {
     console.log("Processing job: ", job.name);
 
-    try {
-      // throw new Error("TEST EMAIL WORKER FAILURE");
+    // await new Promise((resolve) => setTimeout(resolve, 30000));
 
+    // console.log("Simulating email worker crash...");
+    // process.exit(1);
+
+    try {
       if (job.name === "booking-confirmation") {
+        // throw new Error("TEST EMAIL WORKER FAILURE");
+
         await sendBookingConfirmationEmail({
           recipientEmail: job.data.recipientEmail,
           recipientUsername: job.data.recipientUsername,
@@ -25,6 +30,9 @@ export const emailWorker = new Worker(
           sessionType: job.data.sessionType,
           totalPrice: job.data.totalPrice,
         });
+
+        // console.log("Email accepted by provider. Simulating worker crash...");
+        // process.exit(1);
       }
     } catch (error: any) {
       if (error instanceof EmailError && !error.retryable) {

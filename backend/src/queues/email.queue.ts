@@ -5,31 +5,34 @@ export const emailQueue = new Queue("email", {
   connection: redis,
 });
 
-export const addEmailJob = async ({
-  recipientEmail,
-  recipientUsername,
-  recipientFullname,
-  mentorUsername,
-  mentorFullname,
-  bookingId,
-  date,
-  startTime,
-  endTime,
-  sessionType,
-  totalPrice,
-}: {
-  recipientEmail: string;
-  recipientUsername: string;
-  recipientFullname: string;
-  mentorUsername: string;
-  mentorFullname: string;
-  bookingId: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  sessionType: string;
-  totalPrice: number;
-}) => {
+export const addEmailJob = async (
+  eventId: string,
+  {
+    recipientEmail,
+    recipientUsername,
+    recipientFullname,
+    mentorUsername,
+    mentorFullname,
+    bookingId,
+    date,
+    startTime,
+    endTime,
+    sessionType,
+    totalPrice,
+  }: {
+    recipientEmail: string;
+    recipientUsername: string;
+    recipientFullname: string;
+    mentorUsername: string;
+    mentorFullname: string;
+    bookingId: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+    sessionType: string;
+    totalPrice: number;
+  },
+) => {
   await emailQueue.add(
     "booking-confirmation",
     {
@@ -46,6 +49,7 @@ export const addEmailJob = async ({
       totalPrice,
     },
     {
+      jobId: `outbox-${eventId}`,
       attempts: 3,
       backoff: {
         type: "custom",

@@ -68,9 +68,12 @@ const processOutboxEvents = async (eventId: mongoose.Types.ObjectId) => {
 
   try {
     if (event.type === "BOOKING_CONFIRMATION_EMAIL") {
-      await addEmailJob(event.payload);
+      await addEmailJob(event._id.toString(), event.payload);
 
       // throw new Error("TEST OUTBOX FAILURE");
+
+      // console.log("Email job added. Simulating worker crash...");
+      // process.exit(1);
     }
 
     await OutboxEvent.findByIdAndUpdate(event._id, {
