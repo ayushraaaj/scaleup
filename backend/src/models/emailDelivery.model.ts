@@ -36,6 +36,7 @@ const emailDeliverySchema = new mongoose.Schema(
         "spam",
         "invalid",
         "deferred",
+        "failed",
       ],
       default: "pending",
     },

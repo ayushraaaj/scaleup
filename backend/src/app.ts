@@ -25,6 +25,7 @@ import bookingRouter from "./routers/booking.router";
 import messageRouter from "./routers/message.router";
 import reviewRouter from "./routers/review.router";
 import notificationRouter from "./routers/notification.router";
+import webhookRouter from "./routers/webhook.router";
 
 app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/auth", authRouter);
@@ -34,6 +35,7 @@ app.use("/api/v1/booking", bookingRouter);
 app.use("/api/v1/message", messageRouter);
 app.use("/api/v1/review", reviewRouter);
 app.use("/api/v1/notification", notificationRouter);
+app.use("/api/v1/webhook", webhookRouter);
 
 app.use(errorHandler);
 

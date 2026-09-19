@@ -14,16 +14,26 @@ export const emailWorker = new Worker(
     // console.log("Simulating email worker crash...");
     // process.exit(1);
 
-    try {
-      if (job.name === "booking-confirmation") {
-        // throw new Error("TEST EMAIL WORKER FAILURE");
+    // try {
+    if (job.name === "booking-confirmation") {
+      const emailDelivery = await EmailDelivery.findOneAndUpdate(
+        { outboxEventId: job.data.outboxEventId },
+        {
+          $setOnInsert: {
+            outboxEventId: job.data.outboxEventId,
+            recipientId: job.data.recipientId,
+            emailType: "BOOKING_CONFIRMATION",
+            provider: "brevo",
+          },
+        },
+        {
+          upsert: true,
+          returnDocument: "after",
+        },
+      );
 
-        const emailDelivery = await EmailDelivery.create({
-          outboxEventId: job.data.outboxEventId,
-          recipientId: job.data.recipientId,
-          emailType: "BOOKING_CONFIRMATION",
-          provider: "brevo",
-        });
+      try {
+        // throw new Error("TEST Email delivery failure");
 
         const response = await sendBookingConfirmationEmail({
           recipientEmail: job.data.recipientEmail,
@@ -47,17 +57,22 @@ export const emailWorker = new Worker(
 
         // console.log("Provider message ID: ", response.messageId);
 
-        // console.log("Email job: ", job);
+        console.log("Email job: ", job);
 
         // console.log("Email accepted by provider. Simulating worker crash...");
         // process.exit(1);
-      }
-    } catch (error: any) {
-      if (error instanceof EmailError && !error.retryable) {
-        throw new UnrecoverableError(error.message);
-      }
+      } catch (error: any) {
+        if (error instanceof EmailError && !error.retryable) {
+          await EmailDelivery.findByIdAndUpdate(emailDelivery._id, {
+            status: "failed",
+            failureReason: error.message,
+          });
 
-      throw error;
+          throw new UnrecoverableError(error.message);
+        }
+
+        throw error;
+      }
     }
   },
   {
@@ -83,8 +98,22 @@ emailWorker.on("completed", (job) => {
   console.log(`Job ${job.id} completed`);
 });
 
-emailWorker.on("failed", (job, error) => {
+emailWorker.on("failed", async (job, error) => {
   console.error(`Job ${job?.id} failed: `, error);
+
+  if (!job) {
+    return;
+  }
+
+  if (job.attemptsMade >= (job.opts.attempts ?? 1)) {
+    await EmailDelivery.findOneAndUpdate(
+      { outboxEventId: job.data.outboxEventId },
+      {
+        status: "failed",
+        failureReason: error.message,
+      },
+    );
+  }
 });
 
 export const stopEmailWorker = async () => {
