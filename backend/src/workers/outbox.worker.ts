@@ -64,7 +64,7 @@ const processOutboxEvents = async (eventId: mongoose.Types.ObjectId) => {
     return;
   }
 
-  console.log("Processing outbox event:", event._id);
+  console.log("Processing outbox event: ", event._id);
 
   try {
     if (event.type === "BOOKING_CONFIRMATION_EMAIL") {
@@ -124,8 +124,7 @@ const processOutboxEvents = async (eventId: mongoose.Types.ObjectId) => {
     });
 
     console.error(
-      `Outbox event failed. Attempt ${event.attempts}. ` +
-        `Next retry at ${nextRetryAt.toISOString()}`,
+      `Outbox event failed. Attempt ${event.attempts}. Next retry at ${nextRetryAt.toISOString()}`,
     );
   }
 };
