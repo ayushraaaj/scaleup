@@ -2,7 +2,7 @@ import { reconcileOutboxEvents } from "./outbox.worker";
 
 const RECONCILIATION_INTERVAL = 60 * 1000;
 
-const startReconciliationWorker = async () => {
+const startReconciliationEmailWorker = async () => {
   console.log("Outbox reconciliation worker started");
 
   while (true) {
@@ -20,4 +20,4 @@ const startReconciliationWorker = async () => {
   }
 };
 
-startReconciliationWorker();
+startReconciliationEmailWorker();

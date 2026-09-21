@@ -7,7 +7,7 @@ import { EmailDelivery } from "../models/emailDelivery.model";
 export const emailWorker = new Worker(
   "email",
   async (job) => {
-    console.log("Processing job: ", job.name);
+    console.log("Processing email job: ", job.name);
 
     // await new Promise((resolve) => setTimeout(resolve, 30000));
 
@@ -57,7 +57,7 @@ export const emailWorker = new Worker(
 
         // console.log("Provider message ID: ", response.messageId);
 
-        console.log("Email job: ", job);
+        // console.log("Email job: ", job);
 
         // console.log("Email accepted by provider. Simulating worker crash...");
         // process.exit(1);

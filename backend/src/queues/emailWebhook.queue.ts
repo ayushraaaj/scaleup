@@ -12,7 +12,7 @@ export const addEmailWebhookJob = async (webhookEventId: string) => {
       webhookEventId,
     },
     {
-      jobId: `email-webhook-${webhookEventId}`,
+      jobId: `webhook-${webhookEventId}`,
       attempts: 3,
       backoff: {
         type: "custom",

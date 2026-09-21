@@ -7,7 +7,9 @@ import {
   startSessionCleanup,
   stopSessionCleanup,
 } from "../jobs/sessionCleanup";
+import { stopEmailWebhookChangeStream } from "./emailWebhook.worker";
 import("./outbox.reconciliation.js");
+import("./emailWebhook.reconciliation.js");
 
 const startWorkers = async () => {
   await connectDB();
@@ -34,6 +36,8 @@ const shutdown = async (signal: string) => {
   await stopEmailWorker();
 
   await stopOutboxWorker();
+
+  await stopEmailWebhookChangeStream();
 
   await closeRedis();
 
