@@ -5,18 +5,34 @@ import { ApiResponse } from "../utils/ApiResponse";
 
 export const handleEmailWebhook = asyncHandler(
   async (req: Request, res: Response) => {
-    const { id, event, "message-id": providerMessageId, ts_event } = req.body;
+    const { id, event, "message-id": providerMessageId } = req.body;
 
     console.log("Webhook Received: ", req.body);
 
-    await EmailWebHookEvent.create({
-      webhookId: id,
-      providerMessageId,
-      event,
-      payload: req.body,
-      receivedAt: new Date(),
-    });
+    try {
+      const webhookEvent = await EmailWebHookEvent.create({
+        webhookId: id,
+        providerMessageId,
+        event,
+        payload: req.body,
+        receivedAt: new Date(),
+      });
 
-    return res.status(200).json(new ApiResponse("Webhook received", {}));
+      console.log(
+        "Webhook Event Created:",
+        webhookEvent._id,
+      );
+    } catch (error) {
+      console.error(
+        "Webhook Event Creation Failed:",
+        error,
+      );
+
+      throw error;
+    }
+
+    return res.status(200).json(
+      new ApiResponse("Webhook received", {}),
+    );
   },
 );
