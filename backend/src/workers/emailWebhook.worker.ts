@@ -265,7 +265,7 @@ const getEmailDeliveryStatus = (event: any) => {
 };
 
 export const emailWebhookWorker = new Worker(
-  "process-email-webhook",
+  "email-webhook",
   async (job) => {
     console.log("Processing email webhook job: ", job.name);
 
