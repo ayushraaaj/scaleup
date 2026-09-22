@@ -5,7 +5,7 @@ const emailWebHookEventSchema = new mongoose.Schema(
     webhookId: {
       type: Number,
       required: true,
-      unique: true,
+      // unique: true,
     },
     providerMessageId: {
       type: String,
