@@ -10,6 +10,7 @@ import { Worker } from "bullmq";
 import { ApiError } from "../utils/ApiError";
 import { EmailDelivery } from "../models/emailDelivery.model";
 import { EmailError } from "../utils/emailError";
+import { webhookEvents } from "../constants/emailWebhookEvents";
 
 const PROCESSING_TIME = 60 * 1000;
 const RETRY_DELAY = 60 * 1000;
@@ -135,16 +136,6 @@ const processEmailWebhookEvents = async (
   }
 };
 
-const webhookEvents = [
-  "delivered",
-  "soft_bounce",
-  "hard_bounce",
-  "blocked",
-  "spam",
-  "invalid_email",
-  "deferred",
-];
-
 let changeStream: ChangeStream | null = null;
 
 const startEmailWebhookChangeStream = async () => {
@@ -153,7 +144,6 @@ const startEmailWebhookChangeStream = async () => {
       {
         $match: {
           operationType: "insert",
-          
         },
       },
     ]);
@@ -229,6 +219,9 @@ export const reconcileEmailWebhookEvents = async () => {
   const now = Date.now();
 
   const events = await EmailWebHookEvent.find({
+    event: {
+      $in: webhookEvents,
+    },
     $or: [
       {
         processingStatus: "processing",

@@ -39,7 +39,6 @@ const emailWebHookEventSchema = new mongoose.Schema(
     processingStatus: {
       type: String,
       enum: ["pending", "processing", "published", "failed", "dead"],
-      default: "pending",
     },
     attempts: {
       type: Number,
