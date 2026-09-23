@@ -153,9 +153,7 @@ const startEmailWebhookChangeStream = async () => {
       {
         $match: {
           operationType: "insert",
-          "fullDocument.event": {
-            $in: webhookEvents,
-          },
+          
         },
       },
     ]);
@@ -163,7 +161,10 @@ const startEmailWebhookChangeStream = async () => {
     console.log("Email webhook change stream started");
 
     changeStream.on("change", async (change) => {
-      if (change.operationType !== "insert") {
+      if (
+        change.operationType !== "insert" ||
+        !webhookEvents.includes(change.fullDocument.event)
+      ) {
         return;
       }
 
