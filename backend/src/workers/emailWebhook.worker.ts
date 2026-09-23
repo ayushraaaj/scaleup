@@ -135,6 +135,16 @@ const processEmailWebhookEvents = async (
   }
 };
 
+const webhookEvents = [
+  "delivered",
+  "soft_bounce",
+  "hard_bounce",
+  "blocked",
+  "spam",
+  "invalid_email",
+  "deferred",
+];
+
 let changeStream: ChangeStream | null = null;
 
 const startEmailWebhookChangeStream = async () => {
@@ -143,6 +153,9 @@ const startEmailWebhookChangeStream = async () => {
       {
         $match: {
           operationType: "insert",
+          "fullDocument.event": {
+            $in: webhookEvents,
+          },
         },
       },
     ]);
