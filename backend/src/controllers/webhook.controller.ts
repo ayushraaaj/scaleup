@@ -28,7 +28,13 @@ export const handleEmailWebhook = asyncHandler(
       });
 
       console.log("Webhook Event Created:", webhookEvent._id);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === 11000) {
+        return res
+          .status(200)
+          .json(new ApiResponse("Webhook already received", {}));
+      }
+
       console.error("Webhook Event Creation Failed:", error);
 
       throw error;
