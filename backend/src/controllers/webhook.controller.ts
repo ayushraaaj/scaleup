@@ -12,11 +12,14 @@ export const handleEmailWebhook = asyncHandler(
 
     const isProcessableEvent = webhookEvents.includes(event);
 
+    const eventKey = `${providerMessageId}:${event}`;
+
     try {
       const webhookEvent = await EmailWebHookEvent.create({
         webhookId: id,
         providerMessageId,
         event,
+        eventKey,
         payload: req.body,
         receivedAt: new Date(),
         ...(isProcessableEvent && {

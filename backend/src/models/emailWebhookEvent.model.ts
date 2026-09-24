@@ -28,6 +28,11 @@ const emailWebHookEventSchema = new mongoose.Schema(
       ],
       required: true,
     },
+    eventKey: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     payload: {
       type: mongoose.Schema.Types.Mixed,
       required: true,
