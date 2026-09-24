@@ -16,11 +16,15 @@ export const verifyJWT = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader?.startsWith("Bearer ")) {
+    if (!authHeader) {
       throw new ApiError(401, "Unauthorized request");
     }
 
-    const token = authHeader.split(" ")[1];
+    const [scheme, token] = authHeader.split(" ");
+
+    if (scheme !== "Bearer" || !token) {
+      throw new ApiError(401, "Unauthorized request");
+    }
 
     try {
       const decodedToken = getDecodedToken(token);

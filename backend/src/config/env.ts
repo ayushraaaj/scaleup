@@ -42,6 +42,7 @@ export const BREVO_SMTP_HOST = getEnv("BREVO_SMTP_HOST");
 export const BREVO_SMTP_PASS = getEnv("BREVO_SMTP_PASS");
 export const BREVO_SMTP_PORT = getEnv("BREVO_SMTP_PORT");
 export const BREVO_SMTP_USER = getEnv("BREVO_SMTP_USER");
+export const BREVO_WEBHOOK_TOKEN = getEnv("BREVO_WEBHOOK_TOKEN");
 
 export const EMAIL_FROM = getEnv("EMAIL_FROM");
 export const EMAIL_FROM_NAME = getEnv("EMAIL_FROM_NAME");
