@@ -3,8 +3,24 @@ import cors from "cors";
 import { CLIENT_URL } from "./config/env";
 import { errorHandler } from "./middlewares/error.middleware";
 import cookieParser from "cookie-parser";
+import pinoHttp from "pino-http";
+import { logger } from "./utils/logger";
 
 const app = express();
+
+app.use(
+  pinoHttp({
+    logger,
+    redact: {
+      paths: [
+        "req.headers.authorization",
+        "req.headers.cookie",
+        "res.headers['set-cookie']",
+      ],
+      censor: "[REDACTED]",
+    },
+  }),
+);
 
 app.use(
   cors({

@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import "./instrumentation";
 import app from "./app";
 import { PORT } from "./config/env";
 import connectDB from "./db/db";

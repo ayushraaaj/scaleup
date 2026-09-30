@@ -11,6 +11,7 @@ import { ApiError } from "../utils/ApiError";
 import { EmailDelivery } from "../models/emailDelivery.model";
 import { EmailError } from "../utils/emailError";
 import { webhookEvents } from "../constants/emailWebhookEvents";
+import { logger } from "../utils/logger";
 
 const PROCESSING_TIME = 60 * 1000;
 const RETRY_DELAY = 60 * 1000;
@@ -76,6 +77,11 @@ const processEmailWebhookEvents = async (
   }
 
   console.log("Processing email webhook event: ", event._id);
+
+  logger.info(
+    { webhookEventId: event._id.toString() },
+    "Processing email webhook event",
+  );
 
   // console.log("Simulating crash...");
   // process.exit(1);
