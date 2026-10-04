@@ -8,6 +8,7 @@ import NotificationService from "../services/notification.service";
 import { addEmailJob } from "../queues/email.queue";
 import mongoose from "mongoose";
 import { OutboxEvent } from "../models/outboxEvent.model";
+import { injectTraceContext } from "../utils/traceContext";
 
 export const createBooking = asyncHandler(
   async (req: Request, res: Response) => {
@@ -94,6 +95,8 @@ export const createBooking = asyncHandler(
 
       const booking = createdBooking[0];
 
+      const traceContext = injectTraceContext();
+
       await OutboxEvent.create(
         [
           {
@@ -114,6 +117,7 @@ export const createBooking = asyncHandler(
               sessionType: booking.sessionType,
               totalPrice: booking.totalPrice,
             },
+            traceContext,
           },
         ],
         { session: dbSession },

@@ -7,6 +7,10 @@ export const emailQueue = new Queue("email", {
 
 export const addEmailJob = async (
   eventId: string,
+  traceContext: {
+    traceparent: string;
+    tracestate?: string;
+  },
   {
     recipientId,
     recipientEmail,
@@ -39,6 +43,7 @@ export const addEmailJob = async (
     "booking-confirmation",
     {
       outboxEventId: eventId,
+      traceContext,
       recipientId,
       recipientEmail,
       recipientUsername,

@@ -31,6 +31,10 @@ const outboxEventSchema = new mongoose.Schema(
     nextRetryAt: {
       type: Date,
     },
+    traceContext: {
+      traceparent: String,
+      tracestate: String,
+    },
   },
   { timestamps: true },
 );

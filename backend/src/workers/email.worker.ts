@@ -16,6 +16,8 @@ export const emailWorker = new Worker(
 
     // try {
     if (job.name === "booking-confirmation") {
+      console.log("Received trace context: ", job.data.traceContext);
+
       const emailDelivery = await EmailDelivery.findOneAndUpdate(
         { outboxEventId: job.data.outboxEventId },
         {

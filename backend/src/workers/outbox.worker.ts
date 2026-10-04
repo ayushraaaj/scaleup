@@ -66,9 +66,24 @@ const processOutboxEvents = async (eventId: mongoose.Types.ObjectId) => {
 
   console.log("Processing outbox event: ", event._id);
 
+  console.log("Outbox trace context:", event.traceContext);
+
   try {
     if (event.type === "BOOKING_CONFIRMATION_EMAIL") {
-      await addEmailJob(event._id.toString(), event.payload);
+      if (!event.traceContext?.traceparent) {
+        throw new Error(`Trace context missing for outbox event ${event._id}`);
+      }
+
+      await addEmailJob(
+        event._id.toString(),
+        {
+          traceparent: event.traceContext.traceparent,
+          ...(event.traceContext.tracestate && {
+            tracestate: event.traceContext.tracestate,
+          }),
+        },
+        event.payload,
+      );
 
       // throw new Error("TEST OUTBOX FAILURE");
 
