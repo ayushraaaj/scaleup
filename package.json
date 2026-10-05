@@ -6,7 +6,7 @@
   "scripts": {
     "dev:frontend": "cd frontend && npm run dev",
     "dev:backend": "cd backend && npm run dev",
-    "worker": "cd backend && npm run worker",
+    "worker:dev": "cd backend && npm run worker:dev",
     "dev:all:backend": "cd backend && npm run dev:all"
   },
   "author": "Ayush Raj",

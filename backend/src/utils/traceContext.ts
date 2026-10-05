@@ -7,3 +7,7 @@ export const injectTraceContext = () => {
 
   return carrier;
 };
+
+export const extractTraceContext = (traceContext: Record<string, string>) => {
+  return propagation.extract(context.active(), traceContext);
+};

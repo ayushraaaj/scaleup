@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import { OutboxEvent } from "../models/outboxEvent.model";
 import { addEmailJob } from "../queues/email.queue";
 import { ChangeStream } from "mongodb";
+import { trace } from "@opentelemetry/api";
+import { extractTraceContext } from "../utils/traceContext";
 
 const PROCESSING_TIME = 5 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
@@ -73,6 +75,14 @@ const processOutboxEvents = async (eventId: mongoose.Types.ObjectId) => {
       if (!event.traceContext?.traceparent) {
         throw new Error(`Trace context missing for outbox event ${event._id}`);
       }
+
+      // const parentContext = extractTraceContext(event.traceContext);
+
+      // const spanContext = trace.getSpanContext(parentContext);
+
+      // console.log("Extracted parent context: ", parentContext);
+
+      // console.log("Extracted span context: ", spanContext);
 
       await addEmailJob(
         event._id.toString(),

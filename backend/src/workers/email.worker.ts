@@ -3,10 +3,30 @@ import { redis } from "../config/redis";
 import { sendBookingConfirmationEmail } from "../services/email.service";
 import { EmailError } from "../utils/emailError";
 import { EmailDelivery } from "../models/emailDelivery.model";
+import { extractTraceContext } from "../utils/traceContext";
+import { trace } from "@opentelemetry/api";
+
+const tracer = trace.getTracer("scaleup-email-worker");
 
 export const emailWorker = new Worker(
   "email",
   async (job) => {
+    const parentContext = extractTraceContext(job.data.traceContext);
+
+    const spanContext = trace.getSpanContext(parentContext);
+
+    console.log("Extracted span context: ", spanContext);
+
+    const workerSpan = tracer.startSpan(
+      "send-booking-confirmation-email",
+      {},
+      parentContext,
+    );
+
+    console.log("Worker span context: ", workerSpan.spanContext());
+
+    workerSpan.end();
+
     console.log("Processing email job: ", job.name);
 
     // await new Promise((resolve) => setTimeout(resolve, 30000));
