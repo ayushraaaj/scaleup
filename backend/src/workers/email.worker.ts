@@ -4,7 +4,7 @@ import { sendBookingConfirmationEmail } from "../services/email.service";
 import { EmailError } from "../utils/emailError";
 import { EmailDelivery } from "../models/emailDelivery.model";
 import { extractTraceContext } from "../utils/traceContext";
-import { trace } from "@opentelemetry/api";
+import { SpanStatusCode, trace } from "@opentelemetry/api";
 
 const tracer = trace.getTracer("scaleup-email-worker");
 
@@ -17,85 +17,105 @@ export const emailWorker = new Worker(
 
     console.log("Extracted span context: ", spanContext);
 
-    const workerSpan = tracer.startSpan(
+    // const workerSpan = tracer.startSpan(
+    //   "send-booking-confirmation-email",
+    //   {},
+    //   parentContext,
+    // );
+
+    // console.log("Worker span context: ", workerSpan.spanContext());
+
+    // workerSpan.end();
+
+    await tracer.startActiveSpan(
       "send-booking-confirmation-email",
       {},
       parentContext,
-    );
+      async (span) => {
+        try {
+          console.log("Processing email job: ", job.name);
 
-    console.log("Worker span context: ", workerSpan.spanContext());
+          // await new Promise((resolve) => setTimeout(resolve, 30000));
 
-    workerSpan.end();
+          // console.log("Simulating email worker crash...");
+          // process.exit(1);
 
-    console.log("Processing email job: ", job.name);
+          // try {
+          if (job.name === "booking-confirmation") {
+            console.log("Received trace context: ", job.data.traceContext);
 
-    // await new Promise((resolve) => setTimeout(resolve, 30000));
+            const emailDelivery = await EmailDelivery.findOneAndUpdate(
+              { outboxEventId: job.data.outboxEventId },
+              {
+                $setOnInsert: {
+                  outboxEventId: job.data.outboxEventId,
+                  recipientId: job.data.recipientId,
+                  emailType: "BOOKING_CONFIRMATION",
+                  provider: "brevo",
+                },
+              },
+              {
+                upsert: true,
+                returnDocument: "after",
+              },
+            );
 
-    // console.log("Simulating email worker crash...");
-    // process.exit(1);
+            try {
+              throw new Error("TEST Email delivery failure");
 
-    // try {
-    if (job.name === "booking-confirmation") {
-      console.log("Received trace context: ", job.data.traceContext);
+              const response = await sendBookingConfirmationEmail({
+                recipientEmail: job.data.recipientEmail,
+                recipientUsername: job.data.recipientUsername,
+                recipientFullname: job.data.recipientFullname,
+                mentorUsername: job.data.mentorUsername,
+                mentorFullname: job.data.mentorFullname,
+                bookingId: job.data.bookingId,
+                date: job.data.date,
+                startTime: job.data.startTime,
+                endTime: job.data.endTime,
+                sessionType: job.data.sessionType,
+                totalPrice: job.data.totalPrice,
+              });
 
-      const emailDelivery = await EmailDelivery.findOneAndUpdate(
-        { outboxEventId: job.data.outboxEventId },
-        {
-          $setOnInsert: {
-            outboxEventId: job.data.outboxEventId,
-            recipientId: job.data.recipientId,
-            emailType: "BOOKING_CONFIRMATION",
-            provider: "brevo",
-          },
-        },
-        {
-          upsert: true,
-          returnDocument: "after",
-        },
-      );
+              await EmailDelivery.findByIdAndUpdate(emailDelivery._id, {
+                status: "submitted",
+                providerMessageId: response.messageId,
+                submittedAt: new Date(),
+              });
 
-      try {
-        // throw new Error("TEST Email delivery failure");
+              // console.log("Provider message ID: ", response.messageId);
 
-        const response = await sendBookingConfirmationEmail({
-          recipientEmail: job.data.recipientEmail,
-          recipientUsername: job.data.recipientUsername,
-          recipientFullname: job.data.recipientFullname,
-          mentorUsername: job.data.mentorUsername,
-          mentorFullname: job.data.mentorFullname,
-          bookingId: job.data.bookingId,
-          date: job.data.date,
-          startTime: job.data.startTime,
-          endTime: job.data.endTime,
-          sessionType: job.data.sessionType,
-          totalPrice: job.data.totalPrice,
-        });
+              // console.log("Email job: ", job);
 
-        await EmailDelivery.findByIdAndUpdate(emailDelivery._id, {
-          status: "submitted",
-          providerMessageId: response.messageId,
-          submittedAt: new Date(),
-        });
+              // console.log("Email accepted by provider. Simulating worker crash...");
+              // process.exit(1);
+            } catch (error: any) {
+              if (error instanceof EmailError && !error.retryable) {
+                await EmailDelivery.findByIdAndUpdate(emailDelivery._id, {
+                  status: "failed",
+                  failureReason: error.message,
+                });
 
-        // console.log("Provider message ID: ", response.messageId);
+                throw new UnrecoverableError(error.message);
+              }
 
-        // console.log("Email job: ", job);
+              throw error;
+            }
+          }
+        } catch (error) {
+          span.recordException(error instanceof Error ? error : String(error));
 
-        // console.log("Email accepted by provider. Simulating worker crash...");
-        // process.exit(1);
-      } catch (error: any) {
-        if (error instanceof EmailError && !error.retryable) {
-          await EmailDelivery.findByIdAndUpdate(emailDelivery._id, {
-            status: "failed",
-            failureReason: error.message,
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: error instanceof Error ? error.message : String(error),
           });
 
-          throw new UnrecoverableError(error.message);
+          throw error;
+        } finally {
+          span.end();
         }
-
-        throw error;
-      }
-    }
+      },
+    );
   },
   {
     connection: redis,
