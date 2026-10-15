@@ -33,7 +33,8 @@ export const emailWorker = new Worker(
       parentContext,
       async (span) => {
         try {
-          span.setAttribute("bullmq.job..name", job.name);
+          span.setAttribute("messaging.destination.name", "email");
+          span.setAttribute("bullmq.job.name", job.name);
 
           span.setAttribute(
             "scaleup.email.type",
