@@ -10,5 +10,8 @@
     "dev:all:backend": "cd backend && npm run dev:all"
   },
   "author": "Ayush Raj",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "^3.9.10"
+  }
 }

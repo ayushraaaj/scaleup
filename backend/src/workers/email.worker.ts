@@ -33,6 +33,15 @@ export const emailWorker = new Worker(
       parentContext,
       async (span) => {
         try {
+          span.setAttribute("bullmq.job..name", job.name);
+
+          span.setAttribute(
+            "scaleup.email.type",
+            job.name.toUpperCase().replace(/-/g, "_"),
+          );
+
+          span.setAttribute("scaleup.outbox.eventId", job.data.outboxEventId);
+
           console.log("Processing email job: ", job.name);
 
           // await new Promise((resolve) => setTimeout(resolve, 30000));
@@ -61,7 +70,7 @@ export const emailWorker = new Worker(
             );
 
             try {
-              throw new Error("TEST Email delivery failure");
+              // throw new Error("TEST Email delivery failure");
 
               const response = await sendBookingConfirmationEmail({
                 recipientEmail: job.data.recipientEmail,

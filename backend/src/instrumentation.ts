@@ -3,7 +3,7 @@ import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentation
 import { ConsoleSpanExporter } from "@opentelemetry/sdk-trace-node";
 
 const sdk = new NodeSDK({
-  // traceExporter: new ConsoleSpanExporter(),
+  traceExporter: new ConsoleSpanExporter(),
   instrumentations: [getNodeAutoInstrumentations()],
 });
 
